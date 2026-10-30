@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#4f46e5">
+<link rel="apple-touch-icon" href="/icon.svg">
+<title>edu AI - Gia sư học tập</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%8E%93%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#f0f2f8;--card:#fff;--text:#1a1f36;--muted:#6b728a;--brand:#4f46e5;--brand2:#7c3aed;
+  --line:#e2e6f0;--ok:#16a34a;--warn:#d97706;--bad:#dc2626;
+  --radius:16px;--shadow:0 2px 12px rgba(30,40,80,.06);
+  --nav-h:64px;--top-h:56px;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0c0e1a;--card:#161a2e;--text:#eef0ff;--muted:#9aa3c0;--brand:#818cf8;--brand2:#a78bfa;
+    --line:#2a3050;--shadow:0 2px 12px rgba(0,0,0,.3);color-scheme:dark
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;position:relative}
+
+/* ===== TOP BAR ===== */
+.topbar{
+  position:sticky;top:0;z-index:50;background:var(--card);border-bottom:1px solid var(--line);
+  padding:8px 12px;display:flex;align-items:center;gap:10px;min-height:var(--top-h);
+  box-shadow:var(--shadow);
+}
+.logo{font-weight:800;font-size:20px;background:linear-gradient(90deg,var(--brand),var(--brand2));
+  -webkit-background-clip:text;background-clip:text;color:transparent;flex:0 0 auto}
+.topbar .sel{flex:1;display:flex;gap:6px}
+.topbar select{
+  flex:1;border:1px solid var(--line);border-radius:10px;padding:6px 8px;font:inherit;
+  background:var(--bg);color:var(--text);font-size:13px;font-weight:600
+}
+#sync{font-size:11px;color:var(--muted);white-space:nowrap}
+
+/* ===== MAIN CONTENT ===== */
+.main{flex:1;overflow-y:auto;padding:12px 12px calc(var(--nav-h) + 20px);-webkit-overflow-scrolling:touch}
+.pane{display:none}.pane.show{display:block}
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:14px;margin-bottom:12px;box-shadow:var(--shadow)
+}
+.card h3{margin:0 0 10px;font-size:16px;font-weight:700}
+.card h4{margin:12px 0 6px;font-size:14px;color:var(--brand);font-weight:600}
+.tip{color:var(--muted);font-size:13px;margin:6px 0}
+.err{color:var(--bad)}
+
+textarea,input,select{
+  width:100%;border:1px solid var(--line);border-radius:12px;padding:11px 12px;
+  font:inherit;background:var(--bg);color:var(--text)
+}
+textarea{min-height:88px;resize:vertical}
+textarea:focus,input:focus,select:focus{outline:2px solid var(--brand);border-color:transparent}
+
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
+
+button,.file{
+  border:0;border-radius:12px;padding:11px 14px;font:inherit;font-weight:600;cursor:pointer;
+  transition:transform .1s,opacity .15s
+}
+button:active{transform:scale(.97)}
+.primary{background:linear-gradient(90deg,var(--brand),var(--brand2));color:#fff;flex:1;min-width:120px}
+.primary:disabled{opacity:.55;cursor:wait}
+.ghost{background:var(--bg);color:var(--text);border:1px solid var(--line)}
+.file{background:var(--bg);color:var(--text);border:1px solid var(--line);display:inline-flex;align-items:center;gap:4px}
+.btn-icon{padding:11px 12px;min-width:44px;text-align:center}
+
+/* Action bar for solve */
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.actions .primary{grid-column:1/-1}
+.media-row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+
+#prev{display:none;margin-top:10px}
+#prev img{max-width:100%;max-height:200px;border-radius:12px;display:block}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chip{
+  background:var(--bg);border:1px solid var(--line);color:var(--muted);font-weight:500;
+  padding:6px 12px;border-radius:999px;font-size:13px;cursor:pointer
+}
+.chip:active{border-color:var(--brand);color:var(--brand)}
+
+.box{white-space:pre-wrap;word-wrap:break-word;line-height:1.6}
+.box b{color:var(--brand)}
+.hide{display:none!important}
+.file{position:relative;overflow:hidden}
+.vh{position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0}
+
+.bar{margin:8px 0}
+.bar span{font-weight:600;font-size:14px}
+.bar em{float:right;font-style:normal;color:var(--muted);font-size:13px}
+.bar i{display:block;height:8px;border-radius:6px;margin-top:4px;background:linear-gradient(90deg,var(--c) var(--w),var(--line) var(--w))}
+
+.it{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+.it:last-child{border-bottom:0}
+.it input{width:20px;height:20px;margin-top:3px;flex:0 0 auto}
+.it.dn span{opacity:.5;text-decoration:line-through}
+
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{background:var(--bg);border-radius:12px;padding:12px;text-align:center}
+.stat b{display:block;font-size:22px;color:var(--brand);line-height:1.2}
+.stat span{font-size:12px;color:var(--muted)}
+
+ul{padding-left:18px;margin:0}
+#cl{height:min(52vh,420px);overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:4px 0}
+.m{padding:10px 13px;border-radius:14px;max-width:88%;white-space:pre-wrap;word-wrap:break-word;font-size:14.5px}
+.m.u{align-self:flex-end;background:linear-gradient(90deg,var(--brand),var(--brand2));color:#fff}
+.m.a{align-self:flex-start;background:var(--bg);border:1px solid var(--line)}
+
+.mj{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-size:1.08em}
+.mdp{display:block;text-align:center;margin:.4em 0;font-size:1.15em;overflow-x:auto}
+.mj sup,.mj sub{line-height:0;font-size:.72em}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 2px}
+.fr>span{padding:0 3px;line-height:1.25}.fr>span:first-child{border-bottom:1px solid currentColor}
+.sq{border-top:1px solid currentColor;padding:0 2px;margin-left:1px}.rt{font-size:.6em}.ac{position:relative;display:inline-block;padding-top:.55em;line-height:1}.ac::before{content:attr(data-a);position:absolute;left:0;right:0;top:-.1em;text-align:center;font-size:.85em;line-height:1}.bn>span:first-child{border-bottom:0!important}.mx{border-collapse:collapse;display:inline-table;vertical-align:middle}.mx td{padding:1px 8px}.mb{display:inline-flex;align-items:center;vertical-align:middle}.lb{font-size:2.3em;font-weight:100;margin-right:2px}.mp{border-left:1.5px solid;border-right:1.5px solid;border-radius:10px;padding:0 4px}.mq{border-left:1.5px solid;border-right:1.5px solid;padding:0 4px}
+
+/* Sub-tabs inside a section */
+.subnav{display:flex;gap:4px;margin-bottom:12px;background:var(--card);border-radius:12px;padding:4px;border:1px solid var(--line)}
+.subnav button{
+  flex:1;padding:8px 6px;border-radius:9px;font-size:13px;font-weight:600;
+  background:transparent;color:var(--muted);border:0
+}
+.subnav button.on{background:linear-gradient(90deg,var(--brand),var(--brand2));color:#fff}
+
+/* ===== BOTTOM NAV ===== */
+.botnav{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;
+  z-index:50;background:var(--card);border-top:1px solid var(--line);
+  display:flex;padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px));
+  box-shadow:0 -4px 20px rgba(30,40,80,.08)
+}
+.botnav button{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
+  background:transparent;border:0;color:var(--muted);padding:6px 2px;font-size:10px;font-weight:600;
+  border-radius:10px
+}
+.botnav button .ico{font-size:20px;line-height:1}
+.botnav button.on{color:var(--brand)}
+.botnav button.on .ico{transform:scale(1.08)}
+
+.section-label{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:4px 0 8px}
+
+/* Chat input fixed feel */
+.chat-input{display:flex;gap:6px;align-items:flex-end;margin-top:8px}
+.chat-input input{flex:1}
+.chat-tools{display:flex;gap:4px}
+
+footer.note{text-align:center;font-size:12px;color:var(--muted);padding:8px 12px 4px}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR: always visible subject + grade -->
+<div class="topbar">
+  <div class="logo">edu AI</div>
+  <div class="sel">
+    <select id="subj" title="Môn học">
+      <option>Toán</option><option>Vật lý</option><option>Hóa học</option><option>Tiếng Anh</option><option>Ngữ văn</option>
+    </select>
+    <select id="pg" title="Lớp"></select>
+  </div>
+  <span id="sync"></span>
+</div>
+
+<div class="main" id="main">
+
+<!-- ===== GIẢI BÀI ===== -->
+<section class="pane show" id="p-solve">
+  <div class="card">
+    <div class="section-label">Đề bài</div>
+    <textarea id="q" placeholder="Nhập đề bài, ví dụ: Giải phương trình 2x + 5 = 17"></textarea>
+    <textarea id="at" placeholder="Hướng làm của bạn (không bắt buộc) — giúp gia sư dạy đúng chỗ" style="min-height:64px;margin-top:8px"></textarea>
+    <div id="prev"><img id="img" alt="Ảnh đề bài"><p id="fname" class="tip hide" style="margin:6px 0 0"></p></div>
+    <div class="media-row">
+      <label class="file" id="fl">📷 Ảnh/File<input id="file" type="file" accept="image/*,.txt,text/plain" class="vh"></label>
+      <label class="file" id="flcam">📸 Chụp<input id="filecam" type="file" accept="image/*" capture="environment" class="vh"></label>
+      <button class="ghost btn-icon" id="mic" type="button" title="Nói">🎤</button>
+      <button class="ghost btn-icon" id="clr" type="button" title="Xóa">✕</button>
+    </div>
+    <div class="actions">
+      <button class="ghost" id="hint" type="button">💡 Gợi ý từng bước</button>
+      <button class="primary" id="go" type="button">Xem lời giải</button>
+    </div>
+    <div class="chips" id="chips"></div>
+  </div>
+  <div class="card hide" id="out">
+    <div class="box" id="ans"></div>
+    <div class="row hide" id="fb">
+      <span class="tip" style="flex:1">Bạn đã hiểu bài này chưa?</span>
+      <button class="ghost" id="yes" type="button">✓ Hiểu</button>
+      <button class="ghost" id="no" type="button">✗ Chưa</button>
+    </div>
+    <p class="tip hide" id="fbn"></p>
+    <div class="hide" id="cf2">
+      <div class="box" id="cq2"></div>
+      <input id="ca2" placeholder="Đáp án của bạn" style="margin-top:8px">
+      <div class="row"><button class="primary" id="cc2" type="button">Chấm</button></div>
+    </div>
+    <p class="tip" id="vf"></p>
+    <div class="row">
+      <button class="ghost" id="exp" type="button">Giải thích dễ hơn</button>
+      <button class="ghost" id="sim" type="button">Bài tương tự</button>
+      <button class="ghost btn-icon" id="spk" type="button">🔊</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== LUYỆN TẬP (quiz + exam + check) ===== -->
+<section class="pane" id="p-practice">
+  <div class="subnav">
+    <button type="button" class="on" data-sub="quiz">Kiểm tra</button>
+    <button type="button" data-sub="exam">Thi thử</button>
+    <button type="button" data-sub="check">Chấm bài</button>
+  </div>
+  <div id="sub-quiz">
+    <div class="card">
+      <h3>Kiểm tra thích ứng</h3>
+      <div class="grid">
+        <div><label>Chủ đề</label><input id="qt" placeholder="Trống = chẩn đoán tổng hợp"></div>
+        <div><label>Độ khó</label><input id="ql" readonly placeholder="—"></div>
+      </div>
+      <div class="row"><button class="primary" id="qs" type="button">Bắt đầu 10 câu</button></div>
+      <div id="qb" class="hide" style="margin-top:12px">
+        <p class="box" id="qq"></p>
+        <div id="qo"></div>
+        <div class="box tip" id="qe"></div>
+        <div class="row"><button class="ghost hide" id="qn" type="button">Câu tiếp theo →</button></div>
+      </div>
+    </div>
+  </div>
+  <div id="sub-exam" class="hide">
+    <div class="card">
+      <h3>Thi thử có giờ</h3>
+      <div class="grid">
+        <div><label>Số câu</label><input id="en" type="number" min="5" max="20" value="10"></div>
+        <div><label>Phút</label><input id="em" type="number" min="5" max="60" value="15"></div>
+      </div>
+      <div class="row"><button class="primary" id="es" type="button">Bắt đầu thi</button></div>
+      <p class="tip" id="et"></p>
+    </div>
+    <div class="card hide" id="eb"><div id="eq"></div><div class="row"><button class="primary" id="ef" type="button">Nộp bài</button></div><div class="box" id="er"></div></div>
+  </div>
+  <div id="sub-check" class="hide">
+    <div class="card">
+      <h3>Chấm bài làm của bạn</h3>
+      <textarea id="cq" placeholder="Đề bài" style="min-height:56px"></textarea>
+      <textarea id="cw" placeholder="Bài làm (hoặc tải ảnh/file)" style="margin-top:8px;min-height:72px"></textarea>
+      <div class="media-row">
+        <label class="file" id="cfl">📷 Ảnh/File<input id="cf" type="file" accept="image/*,.txt,text/plain" class="vh"></label>
+        <label class="file" id="cflcam">📸 Chụp<input id="cfcam" type="file" accept="image/*" capture="environment" class="vh"></label>
+      </div>
+      <div class="row"><button class="primary" id="cb" type="button">Chỉ ra chỗ sai</button></div>
+      <div class="box" id="co" style="margin-top:10px"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== BẢN ĐỒ + LỖ HỔNG ===== -->
+<section class="pane" id="p-learn">
+  <div class="subnav">
+    <button type="button" class="on" data-sub="map">Bản đồ</button>
+    <button type="button" data-sub="gap">Lỗ hổng</button>
+    <button type="button" data-sub="graph">Đồ thị</button>
+    <button type="button" data-sub="lib">Thư viện</button>
+  </div>
+  <div id="sub-map">
+    <div class="card">
+      <h3>Bản đồ kiến thức</h3>
+      <div class="grid">
+        <div><label>Lớp</label><select id="mg"></select></div>
+        <div class="tip" id="ms" style="align-self:end"></div>
+      </div>
+      <p class="tip">Xanh = vững · Vàng = cần ôn · Đỏ = yếu · Xám = chưa có dữ liệu. Bấm chủ đề để luyện.</p>
+    </div>
+    <div id="mp"></div>
+  </div>
+  <div id="sub-lib" class="hide">
+    <div class="card"><h3>Thư viện kiến thức</h3>
+      <p class="tip" id="lbi"></p>
+      <p class="tip">Bấm một chương để xem tóm tắt: nội dung chính, công thức, lỗi thường gặp, ví dụ mẫu. Nội dung do AI tạo và lưu lại trên máy, chưa được giáo viên duyệt, hãy đối chiếu sách giáo khoa.</p>
+    </div>
+    <div id="lbl"></div>
+  </div>
+  <div id="sub-gap" class="hide">
+    <div class="card">
+      <h3>Lỗ hổng kiến thức</h3>
+      <div id="gl"></div>
+      <p class="tip" id="wk"></p>
+      <div class="row">
+        <button class="primary" id="an" type="button">Phân tích bằng AI</button>
+        <button class="ghost" id="pr" type="button">Luyện chỗ yếu</button>
+      </div>
+    </div>
+    <div class="card"><div class="box" id="ao">Giải vài bài và đánh dấu “Hiểu / Chưa hiểu” để tìm lỗ hổng.</div></div>
+  </div>
+  <div id="sub-graph" class="hide">
+    <div class="card">
+      <h3>Vẽ đồ thị hàm số</h3>
+      <input id="gf" value="x^2-2*x-3" placeholder="Ví dụ: x^2-2*x-3, sin(x)">
+      <div class="row"><button class="primary" id="gb" type="button">Vẽ đồ thị</button></div>
+      <canvas id="gc" width="640" height="400" style="width:100%;border:1px solid var(--line);border-radius:12px;margin-top:10px;background:var(--bg)"></canvas>
+      <p class="tip" id="gm"></p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== LỊCH + ÔN TẬP ===== -->
+<section class="pane" id="p-plan">
+  <div class="subnav">
+    <button type="button" class="on" data-sub="sch">Lịch học</button>
+    <button type="button" data-sub="rev">Ôn tập</button>
+  </div>
+  <div id="sub-sch">
+    <div class="card">
+      <h3>Thiết kế lịch học</h3>
+      <div class="grid">
+        <div><label>Ngày/tuần</label><input id="pd" type="number" min="1" max="7" value="5"></div>
+        <div><label>Phút/ngày</label><input id="pm" type="number" min="15" max="240" value="45"></div>
+      </div>
+      <div style="margin-top:8px"><label class="tip">Mục tiêu</label><input id="pgoal" placeholder="Thi vào lớp 10, ôn thi HK..."></div>
+      <div class="row"><button class="primary" id="sgb" type="button">Tạo lịch bằng AI</button></div>
+      <p class="tip" id="smsg"></p>
+      <label class="tip"><input type="checkbox" id="kid" style="width:auto;margin-right:6px"> Chế độ trẻ em (&lt;13 tuổi)</label>
+      <h4>Pomodoro</h4>
+      <div class="row">
+        <span id="pt" style="font-size:28px;font-weight:700">25:00</span>
+        <button class="ghost" id="pb" type="button">Bắt đầu</button>
+        <button class="ghost" id="pr2" type="button">Đặt lại</button>
+      </div>
+      <p class="tip" id="pc">25 phút học · 5 phút nghỉ</p>
+    </div>
+    <div class="card"><div id="sl"></div></div>
+  </div>
+  <div id="sub-rev" class="hide">
+    <div class="card">
+      <h3>Ôn tập ngắt quãng</h3>
+      <p class="tip">Bài sai sẽ quay lại sau 1, 3, 7, 14 ngày.</p>
+      <div id="rl"></div>
+    </div>
+    <div class="card">
+      <h3>Sổ lỗi sai</h3>
+      <div id="nb"></div>
+      <div class="row"><button class="primary" id="fcb" type="button">Tạo flashcard công thức</button></div>
+      <div id="fc" style="margin-top:10px"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== THÊM: Gia sư + Tiến trình ===== -->
+<section class="pane" id="p-more">
+  <div class="subnav">
+    <button type="button" class="on" data-sub="chat">Gia sư</button>
+    <button type="button" data-sub="prog">Tiến trình</button>
+  </div>
+  <div id="sub-chat">
+    <div class="card" style="padding-bottom:10px">
+      <div style="display:flex;gap:6px;margin-bottom:8px;align-items:center">
+        <input id="cgoal" placeholder="🎯 Mục tiêu buổi này (vd: ôn phương trình bậc hai)" style="flex:1;padding:8px 10px;font-size:13px">
+        <button class="ghost btn-icon" id="csum" type="button" title="Tóm tắt buổi học">📋</button>
+      </div>
+      <div id="cl"></div>
+      <div id="cprev" class="hide" style="margin:6px 0"><img id="cimg" alt="Ảnh" style="max-width:100%;max-height:140px;border-radius:10px"><p id="cfname" class="tip" style="margin:4px 0 0"></p></div>
+      <div class="chat-input">
+        <input id="ci" placeholder="Hỏi gì cũng được — mình sẽ suy luận rồi trả lời...">
+        <div class="chat-tools">
+          <label class="file btn-icon" id="chfl" style="padding:11px 10px;margin:0" title="Ảnh/File">📷<input id="chfile" type="file" accept="image/*,.txt,text/plain" class="vh"></label>
+          <label class="file btn-icon" id="chcam" style="padding:11px 10px;margin:0" title="Chụp">📸<input id="chcamfile" type="file" accept="image/*" capture="environment" class="vh"></label>
+          <button class="ghost btn-icon" id="cm" type="button" title="Nói">🎤</button>
+          <button class="primary btn-icon" id="cs" type="button">Gửi</button>
+        </div>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="ghost" id="soc" type="button" style="flex:1">❓ Hỏi ngược</button>
+        <button class="ghost" id="tb" type="button" style="flex:1">🎓 Dạy lại AI</button>
+      </div>
+    </div>
+  </div>
+  <div id="sub-prog" class="hide">
+    <div class="card"><h3>Tiến trình</h3><div class="stats" id="st"></div></div>
+    <div class="card"><h3>Mục tiêu hôm nay</h3><div id="gd"></div><div id="bd" class="chips"></div></div>
+    <div class="card">
+      <h3>Báo cáo</h3>
+      <div class="box" id="wr">Tóm tắt tuần học và gợi ý tiếp theo.</div>
+      <div class="row">
+        <button class="primary" id="wrb" type="button">Báo cáo tuần</button>
+        <button class="ghost" id="prb" type="button">📋 Phụ huynh</button>
+      </div>
+      <p class="tip" id="prmsg"></p>
+    </div>
+        <div class="card">
+      <h3>Sao lưu dữ liệu</h3>
+      <textarea id="bk" rows="3" placeholder="Bấm Xuất để lấy mã sao lưu, hoặc dán mã vào đây rồi bấm Nhập" style="font-size:12px"></textarea>
+      <div class="row"><button class="ghost" id="bkx" type="button">Xuất</button><button class="ghost" id="bki" type="button">Nhập</button></div>
+      <p class="tip" id="bkm">Lưu mã đã xuất vào ghi chú để khôi phục khi đổi máy.</p>
+    </div>
+    <div class="card"><h3>Hoạt động gần đây</h3><ul id="rc"></ul></div>
+  </div>
+</section>
+
+<footer class="note">Dữ liệu lưu trên máy bạn · AI qua Claude · edu AI có thể nhầm, hãy kiểm tra kết quả quan trọng</footer>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="botnav" id="botnav">
+  <button type="button" data-t="solve" class="on"><span class="ico">📝</span>Giải bài</button>
+  <button type="button" data-t="practice"><span class="ico">🎯</span>Luyện</button>
+  <button type="button" data-t="learn"><span class="ico">🗺️</span>Bản đồ</button>
+  <button type="button" data-t="plan"><span class="ico">📅</span>Lịch</button>
+  <button type="button" data-t="more"><span class="ico">💬</span>Thêm</button>
+</nav>
+
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)};
+var KEY='eduai.v1';
+function d0(){return{log:[],sched:[],prof:{grade:'Lớp 9',goal:'',days:5,mins:45},chat:[]}}
+var S;try{S=JSON.parse(localStorage.getItem(KEY))||d0()}catch(e){S=d0()}
+var dbd=null,dt=null;
+function save(){S.t=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}if(dbd){clearTimeout(dt);dt=setTimeout(function(){dbd.set({json:JSON.stringify(S)}).catch(function(){})},1500)}}
+var BASE="Bạn là edu AI, gia sư thân thiện và kiên nhẫn cho học sinh Việt Nam. Luôn trả lời bằng tiếng Việt, rõ ràng, dễ hiểu.\n\nNguyên tắc dạy học:\n1. Ưu tiên hỏi gợi mở (Socratic) trước khi đưa đáp án. Khuyến khích học sinh tự suy nghĩ.\n2. Khi giải bài: chia bước rõ ràng (\'Bước 1\', \'Bước 2\'...), giải thích ngắn vì sao chọn cách đó, cuối cùng ghi **Đáp án:**.\n3. Nếu học sinh sai, chỉ ra chỗ sai cụ thể, giải thích nguyên nhân, rồi hướng dẫn cách sửa (không chỉ đưa đáp án đúng).\n4. Điều chỉnh ngôn ngữ theo trình độ: lớp thấp thì đơn giản hơn.\n5. Viết công thức bằng LaTeX: $...$ trong câu, $$...$$ cho công thức chính. Dùng LaTeX chuẩn, được hỗ trợ: \\frac, \\sqrt, \\overrightarrow{AB} cho vectơ, \\widehat{ABC} cho góc, \\angle, \\parallel, \\perp, \\triangle, \\log_{a}, \\sin, \\cos, \\lim_{x \\to a}, \\int_{a}^{b}, \\sum, \\mathbb{R}, \\Rightarrow, \\leq, \\geq, \\neq, \\pm, \\begin{cases} ... \\end{cases} cho hệ, \\begin{pmatrix} ... \\end{pmatrix} cho ma trận, \\ce{H2O} cho công thức hóa học. Không dùng gói hay lệnh đặc biệt khác.\n6. Luôn khích lệ, nhìn nhận sai lầm là một phần của học.\n7. Khi trả lời câu hỏi kiến thức hoặc giải bài: luôn suy luận rõ ràng từng bước, không nhảy cóc. Giải thích vì sao trước khi đưa kết quả.";
+var SYS={valueOf:function(){
+  var subj=S.prof.subj||'Toán';
+  var extra='';
+  if(subj==='Ngữ văn'){
+    extra='\n\nĐẶC THÙ MÔN NGỮ VĂN / VIẾT VĂN:\n- Khi học sinh nhờ làm văn, viết đoạn, nghị luận: KHÔNG chỉ viết mẫu xong là xong. Luôn có: (1) Phân tích đề (yêu cầu, phạm vi, thao tác lập luận), (2) Dàn ý chi tiết (mở–thân–kết, ý chính từng đoạn), (3) Gợi ý dẫn chứng / kiến thức liên hệ, (4) Bài mẫu ngắn hoặc đoạn mẫu (ghi rõ là tham khảo), (5) Tiêu chí chấm / lưu ý tránh lỗi.\n- Khi học sinh gửi bài viết để chữa: nhận xét theo tiêu chí (đúng đề, ý tưởng, bố cục, diễn đạt, chính tả), chỉ ra chỗ hay và chỗ cần sửa, gợi ý cách viết lại — không viết lại toàn bài trừ khi được yêu cầu.\n- Phân tích tác phẩm: nêu hoàn cảnh, nội dung, nghệ thuật, ý nghĩa, kèm dẫn chứng cụ thể trong tác phẩm.\n- Giọng văn phù hợp lứa tuổi, khuyến khích suy nghĩ riêng của học sinh, tránh sáo rỗng.';
+  }else if(subj==='Tiếng Anh'){
+    extra='\n\nĐẶC THÙ TIẾNG ANH:\n- Khi viết đoạn/essay: đưa outline, useful vocabulary & structures, sample paragraph, rồi tips.\n- Khi chữa bài viết: chỉ lỗi (grammar, vocabulary, coherence), giải thích ngắn, gợi ý câu tốt hơn.\n- Có thể đưa bản sửa gợi ý và giải thích vì sao sửa.';
+  }else if(subj==='Toán'||subj==='Vật lý'||subj==='Hóa học'){
+    extra='\n\nVới môn này: ưu tiên công thức đúng, từng bước rõ, kiểm tra đáp án khi có thể.';
+  }
+  return BASE+'\n\nMôn học: '+subj+', '+S.prof.grade+', theo chương trình SGK Việt Nam.'+extra+(S.prof.kid?'\nHọc sinh là trẻ em dưới 13 tuổi: dùng từ ngữ rất đơn giản, thân thiện, chỉ nói nội dung phù hợp lứa tuổi, không hỏi hay lưu thông tin cá nhân, nhẹ nhàng từ chối mọi yêu cầu ngoài việc học.':'')+(S.prof.socratic?'\nChế độ hỏi ngược đang BẬT: ưu tiên đặt câu hỏi gợi mở, chỉ đưa gợi ý nhỏ, tránh đưa đáp án ngay trừ khi học sinh yêu cầu rõ.':'');
+}};
+var imgLim=null,smp=null,canImg=false,blob=null,fileText='',ctrl=null,cur=null,lastQ='',lastA='';
+async function getS(){
+  if(smp)return smp;
+  canImg=true;
+  smp=async function(prompt,opt){
+    opt=opt||{};
+    var imgs=[];
+    for(var b of (opt.images||[]))imgs.push(await dataUrl(b));
+    var code='';try{code=localStorage.getItem('eduai.code')||''}catch(e){}
+    var r;
+    try{
+      r=await fetch('/api/ai',{method:'POST',signal:opt.signal,headers:{'Content-Type':'application/json','x-access-code':code},body:JSON.stringify({prompt:String(prompt),images:imgs,fast:!!opt.fast})});
+    }catch(e){
+      if(e&&e.name==='AbortError')throw{code:'cancelled',message:'Đã dừng.'};
+      throw{code:'net',message:'Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.'};
+    }
+    if(r.status===401){
+      var c=window.prompt('Nhập mã truy cập do giáo viên hoặc chủ app cung cấp:');
+      if(c){try{localStorage.setItem('eduai.code',c.trim())}catch(e){}return smp(prompt,opt)}
+      throw{code:'unauth',message:'Cần mã truy cập để dùng AI.'};
+    }
+    if(r.status===429)throw{code:'rate_limited'};
+    if(!r.ok)throw{code:'api',message:'Máy chủ AI đang bận hoặc gặp lỗi, hãy thử lại sau ít phút.'};
+    var rd=r.body.getReader(),dec=new TextDecoder(),text='';
+    try{
+      for(;;){
+        var c2=await rd.read();if(c2.done)break;
+        text+=dec.decode(c2.value,{stream:true});
+        if(opt.onText)opt.onText({text:text});
+      }
+    }catch(e){
+      if(e&&e.name==='AbortError')throw{code:'cancelled',message:'Đã dừng.',text:text};
+      if(!text)throw{code:'net',message:'Kết nối bị gián đoạn, hãy thử lại.'};
+    }
+    if(!text.trim())throw{code:'api',message:'AI không trả lời, hãy thử lại.'};
+    return{text:text};
+  };
+  return smp;
+}
+function dataUrl(f){return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(r.result)};r.onerror=rej;r.readAsDataURL(f)})}
+async function prepImg(f){
+  try{
+    var u=await dataUrl(f);
+    var im=await new Promise(function(res,rej){var i=new Image();i.onload=function(){res(i)};i.onerror=rej;i.src=u});
+    var m=1600,w=im.naturalWidth,h=im.naturalHeight,k=Math.min(1,m/Math.max(w,h));
+    var c=document.createElement('canvas');c.width=Math.max(1,Math.round(w*k));c.height=Math.max(1,Math.round(h*k));
+    var g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);g.drawImage(im,0,0,c.width,c.height);
+    var out=c.toDataURL('image/jpeg',0.85);
+    var b=await new Promise(function(res){c.toBlob(function(x){res(x)},'image/jpeg',0.85)});
+    return{blob:b||f,url:out};
+  }catch(e){var url='';try{url=await dataUrl(f)}catch(e2){}return{blob:f,url:url,fail:true}}
+}
+function pl(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+var SYM={alpha:'α',beta:'β',gamma:'γ',delta:'δ',theta:'θ',lambda:'λ',mu:'μ',pi:'π',rho:'ρ',sigma:'σ',omega:'ω',phi:'φ',varphi:'φ',epsilon:'ε',Delta:'Δ',Sigma:'Σ',Omega:'Ω',Pi:'Π',times:'×',cdot:'·',div:'÷',pm:'±',mp:'∓',leq:'≤',le:'≤',geq:'≥',ge:'≥',neq:'≠',ne:'≠',approx:'≈',equiv:'≡',sim:'∼',infty:'∞',to:'→',rightarrow:'→',leftarrow:'←',Rightarrow:'⇒',Leftarrow:'⇐',Leftrightarrow:'⇔',leftrightarrow:'↔','in':'∈',notin:'∉',subset:'⊂',subseteq:'⊆',cup:'∪',cap:'∩',forall:'∀',exists:'∃',angle:'∠',triangle:'△',perp:'⊥',parallel:'∥',degree:'°',circ:'°',partial:'∂',nabla:'∇',sum:'∑',prod:'∏','int':'∫',ldots:'…',dots:'…',cdots:'⋯',therefore:'∴',because:'∵',emptyset:'∅',lim:'lim ',sin:'sin ',cos:'cos ',tan:'tan ',cot:'cot ',log:'log ',ln:'ln ',max:'max ',min:'min '};
+Object.assign(SYM,{zeta:'ζ',eta:'η',kappa:'κ',nu:'ν',xi:'ξ',tau:'τ',psi:'ψ',chi:'χ',upsilon:'υ',iota:'ι',varepsilon:'ε',vartheta:'ϑ',Gamma:'Γ',Theta:'Θ',Lambda:'Λ',Phi:'Φ',Psi:'Ψ',Xi:'Ξ',supset:'⊃',supseteq:'⊇',nsubseteq:'⊈',setminus:'∖',mid:'∣',nmid:'∤',cong:'≅',propto:'∝',ll:'≪',gg:'≫',oplus:'⊕',otimes:'⊗',vee:'∨',lor:'∨',wedge:'∧',land:'∧',neg:'¬',lnot:'¬',Longrightarrow:'⟹',Longleftrightarrow:'⟺',longrightarrow:'⟶',longleftarrow:'⟵',iff:'⟺',implies:'⟹',mapsto:'↦',uparrow:'↑',downarrow:'↓',nearrow:'↗',searrow:'↘',prime:'′',star:'⋆',bullet:'•',langle:'⟨',rangle:'⟩',lfloor:'⌊',rfloor:'⌋',lceil:'⌈',rceil:'⌉',lbrace:'{',rbrace:'}',vert:'|',Vert:'‖','|':'‖',hbar:'ħ',ell:'ℓ',aleph:'ℵ',square:'□',checkmark:'✓',frown:'⌒',oint:'∮',iint:'∬',iiint:'∭',sqcup:'⊔',cdotp:'·',lt:'<',gt:'>',colon:':',Re:'ℜ',Im:'ℑ',mod:' mod ',bmod:' mod ',ast:'∗',smile:'⌣',asymp:'≍',doteq:'≐',notni:'∌',ni:'∋',varnothing:'∅',triangleq:'≜',nless:'≮',ngtr:'≯',nleq:'≰',ngeq:'≱',measuredangle:'∡',sphericalangle:'∢',lvert:'|',rvert:'|'});
+var FN={sin:1,cos:1,tan:1,cot:1,sec:1,csc:1,arcsin:1,arccos:1,arctan:1,sinh:1,cosh:1,tanh:1,log:1,ln:1,lg:1,lim:1,max:1,min:1,sup:1,inf:1,exp:1,det:1,gcd:1,deg:1,dim:1,ker:1,arg:1,Pr:1};
+function R(s){var o='',i=0;
+function g(){if(s[i]==='{'){var d=1,j=i+1;while(j<s.length&&d){if(s[j]==='{')d++;else if(s[j]==='}')d--;j++}var r=s.slice(i+1,d?j:j-1);i=j;return r}
+if(s[i]==='\\'){var m=/^\\[a-zA-Z]+/.exec(s.slice(i));if(m){i+=m[0].length;return m[0]}}
+return s[i++]||''}
+function ac(a,t){return '<span class="ac" data-a="'+a+'">'+R(t)+'</span>'}
+while(i<s.length){var c=s[i];
+if(c==='\\'){var m=/^\\([a-zA-Z]+|.)/.exec(s.slice(i));if(!m){i++;continue}var n=m[1];i+=m[0].length;
+if(n==='frac'||n==='dfrac'||n==='tfrac'||n==='cfrac'){var a=g(),b=g();o+='<span class="fr"><span>'+R(a)+'</span><span>'+R(b)+'</span></span>'}
+else if(n==='binom'||n==='dbinom'){var a=g(),b=g();o+='(<span class="fr bn"><span>'+R(a)+'</span><span>'+R(b)+'</span></span>)'}
+else if(n==='sqrt'){var x='';if(s[i]==='['){var e=s.indexOf(']',i);if(e>0){x=s.slice(i+1,e);i=e+1}}var a=g();o+=(x?'<sup class="rt">'+R(x)+'</sup>':'')+'√<span class="sq">'+R(a)+'</span>'}
+else if(n==='text'||n==='mathrm'||n==='mathbf'||n==='mathit'||n==='mathcal'||n==='mathsf'||n==='textbf'||n==='textit'||n==='operatorname'||n==='boldsymbol'||n==='underbrace'||n==='overbrace'){o+=R(g())}
+else if(n==='mathbb'){var t=g();o+=t.replace(/[RNZQCP]/g,function(ch){return {R:'ℝ',N:'ℕ',Z:'ℤ',Q:'ℚ',C:'ℂ',P:'ℙ'}[ch]})}
+else if(n==='overline'||n==='bar'){o+='<span style="text-decoration:overline">'+R(g())+'</span>'}
+else if(n==='underline'){o+='<span style="text-decoration:underline">'+R(g())+'</span>'}
+else if(n==='cancel'){o+='<span style="text-decoration:line-through">'+R(g())+'</span>'}
+else if(n==='boxed'){o+='<span style="border:1px solid currentColor;padding:1px 5px;border-radius:4px">'+R(g())+'</span>'}
+else if(n==='vec'||n==='overrightarrow'){o+=ac('→',g())}
+else if(n==='overleftarrow'){o+=ac('←',g())}
+else if(n==='overleftrightarrow'){o+=ac('↔',g())}
+else if(n==='widehat'||n==='hat'){o+=ac('^',g())}
+else if(n==='widetilde'||n==='tilde'){o+=ac('~',g())}
+else if(n==='dot'){o+=ac('·',g())}
+else if(n==='ddot'){o+=ac('¨',g())}
+else if(n==='ce'){var t=g().replace(/&lt;=&gt;|&lt;-&gt;/g,'⇌').replace(/-&gt;/g,'→').replace(/([A-Za-z\)\]])(\d+)/g,'$1_{$2}');o+=R(t)}
+else if(n==='begin'){var nm=g(),e='\\end{'+nm+'}',k=s.indexOf(e,i);if(k<0)continue;var body=s.slice(i,k);i=k+e.length;
+var rows=body.split('\\\\').map(function(r){return r.split('&amp;')}).filter(function(r){return r.join('').trim()});
+var tb='<table class="mx">'+rows.map(function(r){return '<tr>'+r.map(function(cell,ci){return '<td'+(nm==='cases'&&ci===0?' style="text-align:left"':'')+'>'+R(cell)+'</td>'}).join('')+'</tr>'}).join('')+'</table>';
+if(nm==='cases')o+='<span class="mb"><span class="lb">{</span>'+tb+'</span>';
+else if(nm==='pmatrix')o+='<span class="mb mp">'+tb+'</span>';
+else if(nm==='bmatrix'||nm==='vmatrix'||nm==='Vmatrix')o+='<span class="mb mq">'+tb+'</span>';
+else o+='<span class="mb">'+tb+'</span>'}
+else if(n==='left'||n==='right'){if(s[i]==='.')i++}
+else if(n==='displaystyle'||n==='textstyle'||n==='limits'||n==='nolimits'||n==='big'||n==='Big'||n==='bigg'||n==='Bigg'||n==='bigl'||n==='bigr'||n==='Bigl'||n==='Bigr'){}
+else if(n==='\\'){o+='<br>'}
+else if(n==='quad'||n==='qquad'){o+='\u2003'}
+else if(n===','||n===';'||n===':'||n==='!'||n===' '){o+=' '}
+else if(FN[n]){o+=n+((s[i]==='_'||s[i]==='^'||s[i]==='{'||s[i]===' '||i>=s.length)?'':'\u2009')}
+else if(SYM[n])o+=SYM[n];else o+=n}
+else if(c==='^'||c==='_'){i++;var t=c==='^'?'sup':'sub';o+='<'+t+'>'+R(g())+'</'+t+'>'}
+else if(c==='{'||c==='}'){i++}
+else{o+=c;i++}}
+return o}
+function esc(s){s=pl(s);var f=function(b){return function(_,m){return '<span class="mj'+(b?' mdp':'')+'">'+R(m)+'</span>'}};return s.replace(/\$\$([\s\S]+?)\$\$/g,f(1)).replace(/\\\[([\s\S]+?)\\\]/g,f(1)).replace(/\$(?!\s)([^$\n]*?[^$\s])\$(?!\d)/g,f(0)).replace(/\\\(([\s\S]+?)\\\)/g,f(0))}
+function fmt(t){return esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')}
+function errMsg(e){return e&&e.code==='na'?'AI chưa sẵn sàng, hãy tải lại trang rồi thử lại.':e&&e.code==='images_unavailable'?'Không gửi được ảnh. Hãy thử ảnh khác hoặc gõ đề bài ra.':e&&e.code==='image_rejected'?'Ảnh không được chấp nhận. Hãy chụp lại rõ hơn hoặc chọn ảnh JPG/PNG khác.':e&&e.code==='rate_limited'?'Bạn gửi hơi nhanh, hãy thử lại sau ít giây.':e&&e.code==='not_granted'?'Cần mã truy cập để dùng AI.':e&&e.message?e.message:'Có lỗi xảy ra, hãy thử lại.'}
+async function ask(p,box,o){var s=await getS();if(!s)throw{code:'na'};box.innerHTML='Đang suy nghĩ...';var op=o||{};if(op.images&&!canImg)throw{code:'images_unavailable'};op.cache=false;op.onText=function(e){box.innerHTML=fmt(e.text)};var r=await s(SYS+"\n\n"+p,op);box.innerHTML=fmt(r.text);return r.text}
+async function askJson(p){var s=await getS();if(!s)throw{code:'na'};
+var topicHint='';
+try{if(hasMap()){var tglist=(gt()||[]).slice(0,15);if(tglist.length)topicHint='\nGợi ý chủ đề lớp hiện tại: '+tglist.join(', ')+'.';}}catch(e){}
+var r=await s(SYS+"\n\n"+p+"\n\nChỉ trả về JSON hợp lệ, không giải thích, không dùng ```. Nếu có LaTeX trong chuỗi thì viết \\\\frac thay vì \\frac."+topicHint,{cache:false});
+var t=r.text.replace(/```json|```/g,'').trim();
+var a=t.search(/[\[{]/),b=Math.max(t.lastIndexOf(']'),t.lastIndexOf('}'));
+if(a<0||b<a)throw{code:'parse',message:'JSON không hợp lệ'};
+var u=t.slice(a,b+1);
+try{return JSON.parse(u)}catch(e1){
+  try{return JSON.parse(u.replace(/\\(?!["\\\/bfnrtu])/g,'\\\\'))}catch(e2){throw{code:'parse',message:'Không đọc được JSON từ AI'}}
+}
+}
+function stats(){var m={},subj=getSubj();S.log.forEach(function(x){if(x.ok==null)return;var xs=x.subj||'Toán';if(xs!==subj)return;var o=m[x.topic]||(m[x.topic]={ok:0,n:0});o.n++;if(x.ok)o.ok++});return m}
+function weak(){var m=stats();return Object.keys(m).filter(function(k){return m[k].ok/m[k].n<0.6}).sort(function(a,b){return m[a].ok/m[a].n-m[b].ok/m[b].n})}
+
+
+var tabs=document.querySelectorAll('#botnav button');
+var subMap={solve:'solve',practice:'practice',learn:'learn',plan:'plan',more:'more',
+  map:'learn',gap:'learn',graph:'learn',quiz:'practice',exam:'practice',
+  sch:'plan',rev:'plan',chat:'more',prog:'more'};
+function showSub(section, sub){
+  var pane=$('p-'+section); if(!pane)return;
+  pane.querySelectorAll('.subnav button').forEach(function(b){b.classList.toggle('on',b.dataset.sub===sub)});
+  ['quiz','exam','check','map','gap','graph','lib','sch','rev','chat','prog'].forEach(function(s){
+    var el=$('sub-'+s); if(el) el.classList.toggle('hide', s!==sub);
+  });
+}
+function tab(n){
+  var main=subMap[n]||n;
+  tabs.forEach(function(b){b.classList.toggle('on',b.dataset.t===main)});
+  document.querySelectorAll('.pane').forEach(function(p){p.classList.toggle('show',p.id==='p-'+main);p.classList.toggle('hide',p.id!=='p-'+main)});
+  curT=n;
+  if(main==='learn'){ if(n==='gap'){showSub('learn','gap');rGap()} else if(n==='graph'){showSub('learn','graph');plot()} else {showSub('learn','map');rMap()} }
+  else if(main==='practice'){ if(n==='exam')showSub('practice','exam'); else if(n==='check')showSub('practice','check'); else showSub('practice','quiz'); }
+  else if(main==='plan'){ if(n==='rev'){showSub('plan','rev');rRev();rNb()} else {showSub('plan','sch');fSch();rSch()} }
+  else if(main==='more'){ if(n==='prog'){showSub('more','prog');rProg()} else {showSub('more','chat');rChat()} }
+  else if(main==='solve'){}
+}
+tabs.forEach(function(b){b.onclick=function(){tab(b.dataset.t)}});
+// Subnav clicks
+document.querySelectorAll('.subnav button').forEach(function(b){
+  b.onclick=function(){
+    var sub=b.dataset.sub;
+    var section=b.closest('.pane').id.replace('p-','');
+    showSub(section, sub);
+    if(sub==='map')rMap();
+    if(sub==='gap')rGap();
+    if(sub==='graph')plot();
+    if(sub==='lib')rLib();
+    if(sub==='sch'){fSch();rSch()}
+    if(sub==='rev'){rRev();rNb()}
+    if(sub==='chat')rChat();
+    if(sub==='prog')rProg();
+    curT=sub;
+  };
+});
+
+
+var LIBSUB={
+"Toán":"Số và đại số, hình học và đo lường, thống kê và xác suất; lên lớp cao thêm hàm số, giải tích, vectơ và tọa độ.",
+"Vật lý":"Cơ học, nhiệt, điện – từ, quang học, rồi dao động – sóng, điện xoay chiều và vật lý hiện đại ở lớp cuối cấp.",
+"Hóa học":"Cấu tạo chất, phản ứng và tính toán hóa học, rồi hóa vô cơ và hóa hữu cơ ở các lớp cao.",
+"Tiếng Anh":"Từ vựng, ngữ pháp, đọc hiểu, viết và nghe nói theo từng chủ đề.",
+"Ngữ văn":"Đọc hiểu, viết (nghị luận, tự sự, thuyết minh) và phân tích tác phẩm theo thể loại, giai đoạn."
+};
+function rLib(){
+  var sb=getSubj(),g=gnum(),list=gt()||[];
+  $('lbi').textContent=sb+' · Lớp '+g+': '+(LIBSUB[sb]||'');
+  S.lib=S.lib||{};
+  var h='';
+  list.forEach(function(t,i){
+    h+='<div class="card"><div style="display:flex;gap:8px;align-items:center"><b style="flex:1">'+(i+1)+'. '+pl(t)+'</b>'+
+      '<button type="button" class="ghost" data-lb="open" data-i="'+i+'">'+(S.lib[sb+'|'+g+'|'+t]?'Xem':'Tạo tóm tắt')+'</button></div>'+
+      '<div class="lbb hide" id="lb'+i+'" style="white-space:pre-wrap;margin-top:8px;font-size:14px;line-height:1.55"></div>'+
+      '<div class="row hide" id="lbr'+i+'" style="margin-top:8px"><button type="button" class="ghost" data-lb="ask" data-i="'+i+'">💬 Hỏi gia sư</button><button type="button" class="ghost" data-lb="regen" data-i="'+i+'">🔄 Tạo lại</button></div></div>';
+  });
+  $('lbl').innerHTML=h||'<div class="card tip">Chưa có danh sách chương cho môn và lớp này.</div>';
+}
+async function libOpen(i,force){
+  var sb=getSubj(),g=gnum(),t=(gt()||[])[i];if(!t)return;
+  var key=sb+'|'+g+'|'+t,box=$('lb'+i);
+  box.classList.remove('hide');$('lbr'+i).classList.remove('hide');
+  if(S.lib[key]&&!force){box.innerHTML=fmt(S.lib[key]);return}
+  try{
+    var p='Hãy viết thư viện kiến thức cho chương "'+t+'" môn '+sb+' lớp '+g+' theo chương trình giáo dục phổ thông của Việt Nam. Ngắn gọn, dễ học, đúng 4 mục có tiêu đề in đậm: **Nội dung chính** (3-5 ý), **Công thức hoặc khái niệm cần nhớ**, **Lỗi thường gặp**, **Ví dụ mẫu** (1 ví dụ kèm lời giải ngắn). Không bịa; nếu không chắc về chi tiết nào thì nói rõ.';
+    var out=await ask(p,box);
+    S.lib[key]=out;save();
+    var b=document.querySelector('[data-lb="open"][data-i="'+i+'"]');if(b)b.textContent='Xem';
+  }catch(e){box.textContent=(typeof errMsg==='function'?errMsg(e):'Không tạo được, hãy thử lại.')}
+}
+$('lbl').addEventListener('click',function(e){
+  var b=e.target.closest('[data-lb]');if(!b)return;
+  var i=+b.dataset.i,k=b.dataset.lb;
+  if(k==='open')libOpen(i,false);
+  else if(k==='regen')libOpen(i,true);
+  else if(k==='ask'){var t=(gt()||[])[i];tab('more');showSub('more','chat');rChat();if($('cgoal')){$('cgoal').value='Ôn: '+t;S.prof.goalChat='Ôn: '+t;save()}}
+});
+['subj','pg'].forEach(function(id){var el=$(id);if(el)el.addEventListener('change',function(){var v=$('sub-lib');if(v&&!v.classList.contains('hide'))rLib()})});
+
+$('bkx').onclick=async function(){var t=JSON.stringify(S);$('bk').value=t;$('bk').select();var ok=false;try{await navigator.clipboard.writeText(t);ok=true}catch(e){}$('bkm').textContent=ok?'Đã sao chép mã sao lưu. Hãy dán vào ghi chú để giữ.':'Hãy giữ ô trên, chọn Sao chép rồi dán vào ghi chú.'};
+$('bki').onclick=function(){var o;try{o=JSON.parse($('bk').value)}catch(e){$('bkm').textContent='Mã không hợp lệ.';return}
+  if(!o||typeof o!=='object'||!o.prof){$('bkm').textContent='Mã không đúng định dạng dữ liệu của app.';return}
+  if(!window.confirm('Thay toàn bộ dữ liệu hiện tại bằng dữ liệu đã dán?'))return;
+  S=o;save();location.reload()};
+
+function fillChips(){
+  var map={
+    'Toán':['Giải phương trình 2x + 5 = 17','Rút gọn (x+3)² - (x-3)²','Tính đạo hàm y = x³ + 2x'],
+    'Vật lý':['Tính vận tốc trung bình','Phát biểu định luật Newton 2','Bài toán công và công suất'],
+    'Hóa học':['Cân bằng phản ứng hóa học','Tính số mol từ khối lượng','Phân biệt axit và bazơ'],
+    'Tiếng Anh':['Write a paragraph about your hobby','Rewrite in passive voice','Explain present perfect'],
+    'Ngữ văn':['Lập dàn ý NLXH: ý nghĩa của lòng biết ơn','Phân tích nhân vật Chí Phèo','Cảm nhận đoạn Trao duyên (Kiều)','Viết đoạn NLVH 200 chữ về hình tượng người lính','Đọc hiểu và làm văn: nghị luận về bệnh vô cảm']
+  };
+  var list=map[getSubj()]||map['Toán'];
+  $('chips').innerHTML='';
+  list.forEach(function(t){var b=document.createElement('button');b.type='button';b.className='chip';b.textContent=t.length>42?t.slice(0,40)+'…':t;b.title=t;b.onclick=function(){$('q').value=t};$('chips').appendChild(b)});
+  var ph={
+    'Ngữ văn':'Dán đề văn / yêu cầu làm văn, hoặc: Lập dàn ý… / Viết đoạn… / Phân tích…',
+    'Tiếng Anh':'Enter the writing task or grammar question…',
+    'Toán':'Nhập đề bài, ví dụ: Giải phương trình 2x + 5 = 17'
+  };
+  if($('q'))$('q').placeholder=ph[getSubj()]||'Nhập đề bài hoặc câu hỏi…';
+  if($('at'))$('at').placeholder=getSubj()==='Ngữ văn'?'Dàn ý hoặc đoạn bạn đã viết (không bắt buộc) — để gia sư nhận xét đúng chỗ':'Hướng làm của bạn (không bắt buộc) — giúp gia sư dạy đúng chỗ';
+}
+fillChips();
+
+function handleFile(f,isCam){
+if(!f)return;
+blob=null;fileText='';
+$('img').src='';$('img').style.display='none';
+$('fname').classList.add('hide');$('fname').textContent='';
+$('prev').style.display='block';
+var isImg=/^image\//.test(f.type)||/\.(jpe?g|png|gif|webp|bmp|heic)$/i.test(f.name);
+if(isImg){
+$('img').style.display='none';
+blob=f;prepImg(f).then(function(p){blob=p.blob;$('img').src=p.url;$('img').style.display='block'});
+$('fname').textContent=(isCam?'Ảnh chụp: ':'Ảnh: ')+f.name;
+$('fname').classList.remove('hide');
+}else if(/text\/|\.txt$/i.test(f.type+' '+f.name)){
+var r=new FileReader();
+r.onload=function(){
+fileText=String(r.result||'');
+$('q').value=($('q').value?$('q').value+'\n\n':'')+fileText.slice(0,8000);
+$('fname').textContent='Đã đọc file: '+f.name+' ('+Math.round(fileText.length/1000)+'k ký tự)';
+$('fname').classList.remove('hide');
+};
+r.onerror=function(){$('fname').textContent='Không đọc được file: '+f.name;$('fname').classList.remove('hide')};
+r.readAsText(f,'utf-8');
+}else{
+$('fname').textContent='Loại file chưa hỗ trợ: '+f.name+' (chỉ hỗ trợ ảnh và .txt)';
+$('fname').classList.remove('hide');
+}
+}
+$('file').onchange=function(){var f=this.files[0];handleFile(f,false);this.value=''};
+$('filecam').onchange=function(){var f=this.files[0];handleFile(f,true);this.value=''};
+$('clr').onclick=function(){
+$('q').value='';blob=null;fileText='';
+$('file').value='';if($('filecam'))$('filecam').value='';
+$('img').src='';$('img').style.display='none';
+$('fname').classList.add('hide');$('prev').style.display='none';
+$('out').classList.add('hide');
+};
+$('go').onclick=async function(){
+var t=$('q').value.trim();if(!t&&!blob){$('q').focus();return}
+var at=$('at').value.trim();if(!at&&nz!==t){nz=t;$('out').classList.remove('hide');$('fb').classList.add('hide');$('ans').innerHTML='Trước khi xem lời giải, bạn thử nghĩ hướng làm nhé. Hãy viết hướng làm vào ô phía trên, hoặc bấm <b>Gợi ý</b>. Nếu vẫn muốn xem luôn, bấm “Xem lời giải” thêm một lần nữa.';return}lastQ=t||'(đề bài trong ảnh)';$('out').classList.remove('hide');$('fb').classList.add('hide');$('fbn').classList.add('hide');$('go').disabled=true;
+if(ctrl)ctrl.abort();ctrl=new AbortController();
+try{var op={signal:ctrl.signal};if(blob)op.images=[blob];
+var solvePrompt;
+if(getSubj()==='Ngữ văn'){
+  solvePrompt='Đề bài / yêu cầu: '+lastQ+(at?'\n\nBài làm hoặc ý tưởng của học sinh:\n'+at:'')+'\n\nHãy hỗ trợ làm văn / ngữ văn theo cấu trúc:\n1) **Phân tích đề** (yêu cầu gì, dạng bài gì)\n2) **Dàn ý** (Mở bài – Thân bài các ý – Kết bài)\n3) **Gợi ý dẫn chứng / ý cần có**\n4) **Đoạn hoặc bài mẫu ngắn** (ghi rõ là tham khảo, khuyến khích học sinh viết lại bằng lời của mình)\n5) **Lưu ý khi viết** (tránh lạc đề, sáo rỗng, thiếu dẫn chứng...)\nNếu học sinh đã viết bài, hãy nhận xét trước rồi mới gợi ý cải thiện.';
+}else if(getSubj()==='Tiếng Anh' && /write|essay|paragraph|viết|đoạn/i.test(lastQ+at)){
+  solvePrompt='Writing task: '+lastQ+(at?'\n\nStudent draft:\n'+at:'')+'\n\nHelp with: (1) Outline, (2) Key vocabulary & structures, (3) Sample paragraph/essay suitable for the grade, (4) Tips. If there is a draft, give feedback first. Reply in Vietnamese explanations with English samples.';
+}else{
+  solvePrompt='Đề bài: '+lastQ+(at?'\n\nHọc sinh đã thử: '+at+'\nHãy nhận xét ngắn hướng làm của học sinh (đúng chỗ nào, sai chỗ nào) rồi mới giải.':'');
+}
+lastA=await ask(solvePrompt,$('ans'),op);$('fb').classList.remove('hide');
+var item=cur={q:lastQ,topic:'Chưa phân loại',ok:null,ts:Date.now(),subj:getSubj()};S.log.push(item);save();verify(lastQ,lastA);
+askJson('Phân loại chủ đề môn '+(S.prof.subj||'Toán')+' của đề bài này bằng tên ngắn tiếng Việt (ví dụ: Phương trình bậc nhất, Đạo hàm, Hình học phẳng). Đề: '+lastQ+'\nLời giải: '+lastA.slice(0,600)+'\nTrả về {"topic":"..."}').then(function(j){if(j&&j.topic){item.topic=nt(j.topic);save()}}).catch(function(){});
+}catch(e){$('ans').innerHTML='<span class="err">'+errMsg(e)+'</span>'}
+$('go').disabled=false};
+function fbk(v){if(!cur)return;cur.ok=v;if(!v){cur.due=Date.now()+864e5;cur.step=0}save();$('fb').classList.add('hide');$('fbn').textContent=v?'Đã ghi nhận bạn hiểu bài này.':'Đã ghi nhận. edu AI sẽ theo dõi chủ đề này và gợi ý ôn tập.'+(tough()?TM:'');$('fbn').classList.remove('hide')}
+$('yes').onclick=function(){fbk(true)};$('no').onclick=function(){fbk(false)};
+
+function fSch(){var p=S.prof;$('pg').value=p.grade;$('pd').value=p.days;$('pm').value=p.mins;$('pgoal').value=p.goal}
+function rSch(){var h='',last='';S.sched.forEach(function(x,i){if(x.day!==last){h+='<h4>'+esc(x.day)+'</h4>';last=x.day}h+='<label class="it'+(x.done?' dn':'')+'"><input type="checkbox" data-i="'+i+'"'+(x.done?' checked':'')+'><span><b>'+esc(x.topic)+'</b> · '+esc(x.mins||'')+' phút<br>'+esc(x.task)+'</span></label>'});
+$('sl').innerHTML=h||'<p class="tip">Chưa có lịch. Bấm “Tạo lịch học bằng AI” để bắt đầu.</p>'}
+$('sl').onchange=function(e){var i=e.target.dataset.i;if(i==null)return;S.sched[i].done=e.target.checked;save();rSch()};
+$('sgb').onclick=async function(){
+S.prof={subj:S.prof.subj,kid:S.prof.kid,grade:$('pg').value||'Lớp 9',goal:$('pgoal').value,days:+$('pd').value||5,mins:+$('pm').value||45};save();
+$('sgb').disabled=true;$('smsg').textContent='Đang tạo lịch...';var w=weak();
+try{var j=await askJson('Lập lịch học môn '+(S.prof.subj||'Toán')+' 7 ngày (Thứ 2 đến Chủ nhật) cho học sinh '+S.prof.grade+', mục tiêu: '+(S.prof.goal||'củng cố kiến thức')+'. Học '+S.prof.days+' ngày mỗi tuần, mỗi ngày khoảng '+S.prof.mins+' phút. '+(w.length?'Ưu tiên ôn các chủ đề yếu: '+w.join(', ')+'. ':'')+'Mỗi ngày học gồm 1-2 phiên (học, luyện tập, ôn lại). Trả về mảng JSON: [{"day":"Thứ 2","topic":"...","task":"...","mins":30}]');
+var a=Array.isArray(j)?j:(j.schedule||[]);S.sched=a.map(function(x){return{day:x.day,topic:x.topic,task:x.task,mins:x.mins,done:false}});save();$('smsg').textContent='';rSch();
+}catch(e){$('smsg').textContent=errMsg(e)}
+$('sgb').disabled=false};
+
+function rGap(){var m=stats(),k=Object.keys(m);
+$('gl').innerHTML=k.length?k.map(function(t){var r=Math.round(100*m[t].ok/m[t].n);return '<div class="bar"><span>'+esc(t)+'</span><em>'+r+'% ('+m[t].ok+'/'+m[t].n+')</em><i style="--w:'+r+'%;--c:'+(r<60?'#e5484d':r<80?'#f5a524':'#2fb344')+'"></i></div>'}).join(''):'<p class="tip">Chưa có dữ liệu cho môn <b>'+esc(getSubj())+'</b>. Hãy giải vài bài môn này trước.</p>';
+var w=weak();var er={};S.log.forEach(function(x){if(x.err)er[x.err]=(er[x.err]||0)+1});var es=Object.keys(er).map(function(e){return e+' ('+er[e]+')'}).join(', ');
+var PRE=getPRE();
+var pq=w.map(function(t){return PRE[t]?t+' ← nên vững: '+PRE[t].map(function(p){return p+' (lớp '+(tg(p)||'?')+')'}).join(', '):''}).filter(Boolean).join('. ');
+$('wk').textContent=(es?'Loại lỗi hay gặp: '+es+'. ':'')+(pq?'Gốc rễ có thể là: '+pq+'. ':'')+(w.length?'Chủ đề cần ôn: '+w.join(', '):(k.length?'Chưa phát hiện lỗ hổng rõ rệt. Cứ tiếp tục luyện tập nhé!':''))}
+$('an').onclick=async function(){var m=stats(),k=Object.keys(m);if(!k.length){$('ao').textContent='Chưa có dữ liệu để phân tích.';return}
+var d=k.map(function(t){return t+': hiểu '+m[t].ok+'/'+m[t].n}).join('; ');
+var rc=S.log.slice(-8).map(function(x){return '- '+x.q.slice(0,80)+' ['+x.topic+', '+(x.ok==null?'chưa đánh giá':x.ok?'hiểu':'chưa hiểu')+']'}).join('\n');
+try{await ask('Phân tích lỗ hổng kiến thức của học sinh '+S.prof.grade+'. Thống kê: '+d+'\nBài gần đây:\n'+rc+'\n\nNêu: (1) kiến thức nền có thể đang thiếu, (2) thứ tự nên ôn, (3) lời khuyên ngắn.',$('ao'))}catch(e){$('ao').innerHTML='<span class="err">'+errMsg(e)+'</span>'}};
+$('pr').onclick=async function(){var t=weak()[0]||Object.keys(stats())[0];if(!t){$('ao').textContent='Hãy giải vài bài trước.';return}
+try{await ask('Tạo 3 bài tập chủ đề “'+t+'” cho học sinh '+S.prof.grade+', từ dễ đến khó. Không kèm lời giải; cuối cùng ghi phần Đáp án cho từng bài.',$('ao'))}catch(e){$('ao').innerHTML='<span class="err">'+errMsg(e)+'</span>'}};
+
+function rProg(){var l=S.log,k=l.filter(function(x){return x.ok!=null}),ok=k.filter(function(x){return x.ok}).length,sd=S.sched.filter(function(x){return x.done}).length,days={};
+l.forEach(function(x){days[new Date(x.ts).toDateString()]=1});var st=0,dd=new Date();if(!days[dd.toDateString()])dd.setDate(dd.getDate()-1);while(days[dd.toDateString()]){st++;dd.setDate(dd.getDate()-1)}
+var xp=k.length*10+ok*5+sd*20+(S.rev||0)*5+(S.pomo||0)*15,lvl=Math.floor(xp/100)+1,today=l.filter(function(x){return new Date(x.ts).toDateString()===new Date().toDateString()}).length;
+$('st').innerHTML=[['Bài đã giải',l.length],['Tỉ lệ hiểu bài',k.length?Math.round(100*ok/k.length)+'%':'-'],['Buổi học hoàn thành',S.sched.length?sd+'/'+S.sched.length:'-'],['Chuỗi ngày học',st],['Hiểu bài: tuần này / tuần trước',wkd()],['Điểm XP (cấp '+lvl+')',xp],['Lượt ôn tập',S.rev||0]].map(function(a){return '<div class="stat"><b>'+a[1]+'</b><span>'+a[0]+'</span></div>'}).join('');
+$('gd').innerHTML='<div class="bar"><span>Hoạt động hôm nay</span><em>'+Math.min(today,3)+'/3</em><i style="--w:'+Math.min(100,today*33.4)+'%;--c:#4f46e5"></i></div>';
+$('bd').innerHTML=[[l.length>=1,'🌱 Khởi đầu'],[st>=3,'🔥 Chăm chỉ 3 ngày'],[k.length>=10&&ok/k.length>=.8,'🎯 Chính xác ≥80%'],[sd>=5,'📅 5 buổi học'],[(S.rev||0)>=5,'🔁 Chiến binh ôn tập']].map(function(b){return '<span class="chip" style="'+(b[0]?'color:var(--brand);border-color:var(--brand)':'opacity:.45')+'">'+b[1]+'</span>'}).join('');
+$('rc').innerHTML=l.slice(-6).reverse().map(function(x){return '<li>'+esc(x.q.slice(0,60))+' <small class="tip">'+esc(x.topic)+(x.ok==null?'':x.ok?' ✓':' ✗')+'</small></li>'}).join('')||'<li class="tip">Chưa có hoạt động.</li>'}
+
+function rChat(){$('cl').innerHTML=S.chat.length?S.chat.map(function(m){return '<div class="m '+m.r+'">'+fmt(m.t)+'</div>'}).join(''):'<div class="m a">Chào bạn! Mình là gia sư edu AI.\n\n• Ghi mục tiêu buổi học ở ô phía trên để mình bám theo\n• Hỏi bài / kiến thức — mình suy luận rồi trả lời\n• Gửi ảnh bài làm nếu cần\n• Bật ❓ Hỏi ngược để tự tìm ra đáp án\n• Bấm 📋 để tóm tắt cuối buổi</div>';$('cl').scrollTop=1e9}
+$('ci').onkeydown=function(e){if(e.key==='Enter')$('cs').click()};
+var chBlob=null,chText='';
+function handleChatFile(f,isCam){
+  if(!f)return;chBlob=null;chText='';
+  var isImg=/^image\//.test(f.type)||/\.(jpe?g|png|gif|webp|bmp|heic)$/i.test(f.name);
+  if(isImg){
+    chBlob=f;prepImg(f).then(function(p){chBlob=p.blob;$('cimg').src=p.url;$('cimg').style.display='block'});
+    $('cfname').textContent=(isCam?'Ảnh chụp: ':'Ảnh: ')+f.name;$('cprev').classList.remove('hide');
+  }else if(/text\/|\.txt$/i.test(f.type+' '+f.name)){
+    var r=new FileReader();
+    r.onload=function(){chText=String(r.result||'').slice(0,6000);$('ci').value=($('ci').value?$('ci').value+' ':'')+chText.slice(0,500)+'…';$('cfname').textContent='Đã đọc: '+f.name;$('cprev').classList.remove('hide');$('cimg').style.display='none'};
+    r.readAsText(f,'utf-8');
+  }else{$('cfname').textContent='Chỉ hỗ trợ ảnh và .txt';$('cprev').classList.remove('hide');$('cimg').style.display='none'}
+}
+if($('chfile'))$('chfile').onchange=function(){var f=this.files[0];handleChatFile(f,false);this.value=''};
+if($('chcamfile'))$('chcamfile').onchange=function(){var f=this.files[0];handleChatFile(f,true);this.value=''};
+$('cs').onclick=async function(){
+  var t=$('ci').value.trim();
+  if(!t&&!chBlob)return;
+  $('ci').value='';
+  var displayT=t||(chBlob?'[Đã gửi ảnh'+(chBlob.name?': '+chBlob.name:'')+']':'');
+  S.chat.push({r:'u',t:displayT});
+  var m={r:'a',t:'Đang suy luận...'};S.chat.push(m);S.chat=S.chat.slice(-50);rChat();
+  var w=weak();
+  var goal=($('cgoal')&&$('cgoal').value.trim())||S.prof.goalChat||'';
+  if($('cgoal')&&goal)S.prof.goalChat=goal;
+  var h=S.chat.slice(-14,-2).filter(function(x){return !x.err}).map(function(x){return (x.r==='u'?'Học sinh: ':'edu AI: ')+x.t}).join('\n');
+  var lastStudent=S.chat.filter(function(x){return x.r==='u'&&!x.err}).slice(-2,-1)[0];
+  try{
+    var s=await getS();if(!s)throw{code:'na'};
+    var modeNote='';
+    if(tbm){
+      modeNote='CHẾ ĐỘ DẠY LẠI AI: Học sinh đang giải thích khái niệm để dạy bạn. Đóng vai người học: (1) tóm tắt lại những gì em nói, (2) chấm mức hiểu 0-100%, (3) khen điểm đúng cụ thể, (4) chỉ ra 1-2 chỗ thiếu/sai, (5) hỏi đúng 1 câu kiểm tra sâu hơn.';
+    }else if(socratic||S.prof.socratic){
+      modeNote='CHẾ ĐỘ HỎI NGƯỢC (Socratic) — BẮT BUỘC:\n- Đọc kỹ câu vừa rồi của học sinh.\n- Nếu em đang trả lời câu hỏi trước: nhận xét ngắn đúng/sai chỗ nào, rồi hỏi câu tiếp theo hẹp hơn (không nhảy chủ đề).\n- Nếu em hỏi kiến thức: KHÔNG đưa đáp án đầy đủ; chỉ hỏi 1-2 câu gợi mở hoặc cho gợi ý rất nhỏ.\n- Chỉ giải thích đầy đủ khi em nói rõ "cho đáp án" / "giải đi" / "em chịu rồi".\n- Mỗi lượt chỉ 1 ý chính + 1 câu hỏi.';
+    }else{
+      modeNote='CHẾ ĐỘ HỎI ĐÁP + SUY LUẬN SÂU — BẮT BUỘC làm theo cấu trúc:\n**Suy luận:** (2-5 câu: kiến thức liên quan, vì sao chọn hướng này, lưu ý dễ sai)\n**Trả lời:** đáp án / giải thích chính, rõ ràng.\n**Kiểm tra nhanh:** nếu là bài tập, thay đáp án vào đề hoặc nêu cách kiểm tra 1 câu.\n**Câu hỏi nối:** 1 câu ngắn để chắc em hiểu (hoặc gợi ý bài tương tự).\nNếu là bài tập: đánh số Bước 1, 2... Nếu kiến thức: ví dụ đời thường ngắn. Không lan man.';
+    }
+    var goalLine=goal?'\nMỤC TIÊU BUỔI HỌC (bám theo): '+goal:'';
+    var weakLine=w.length?'\nChủ đề em còn yếu: '+w.join(', ')+'. Ưu tiên củng cố nếu liên quan.':'';
+    var imgNote=chBlob?'\nHọc sinh đã gửi ảnh (xem ảnh đính kèm). Hãy đọc/phân tích nội dung trong ảnh nếu liên quan.':'';
+    var prevAns=lastStudent?'\n(Câu học sinh ngay trước đó: '+String(lastStudent.t).slice(0,200)+')':'';
+    var prompt=SYS+'\n\nBạn là gia sư đang trò chuyện 1-1 với học sinh '+S.prof.grade+', môn '+(S.prof.subj||'Toán')+'.'+goalLine+weakLine+'\n'+modeNote+prevAns+imgNote+'\n\nLịch sử gần đây:\n'+h+'\n\nHọc sinh: '+(t||'(xem ảnh đính kèm)')+'\n\nedu AI:';
+    var op={cache:false,onText:function(e){m.t=e.text;rChat()}};
+    if(chBlob){if(!canImg)throw{code:'images_unavailable'};op.images=[chBlob]}
+    var r=await s(prompt,op);
+    m.t=r.text;
+  }catch(e){m.t=errMsg(e);m.err=true}
+  chBlob=null;chText='';
+  if($('chfile'))$('chfile').value='';
+  if($('chcamfile'))$('chcamfile').value='';
+  if($('cprev'))$('cprev').classList.add('hide');
+  save();rChat();
+};
+$('csum').onclick=async function(){
+  if(!S.chat.length){$('csum').textContent='📋';return}
+  var h=S.chat.slice(-20).filter(function(x){return !x.err}).map(function(x){return (x.r==='u'?'Học sinh: ':'edu AI: ')+x.t}).join('\n');
+  var goal=($('cgoal')&&$('cgoal').value.trim())||'';
+  S.chat.push({r:'a',t:'Đang tóm tắt buổi học...'});rChat();
+  var m=S.chat[S.chat.length-1];
+  try{
+    var s=await getS();if(!s)throw{code:'na'};
+    var r=await s(SYS+'\n\nHãy viết TÓM TẮT BUỔI HỌC ngắn (dưới 120 từ) cho học sinh '+S.prof.grade+'.\nMục tiêu buổi: '+(goal||'không ghi')+'.\nNội dung trò chuyện:\n'+h+'\n\nGồm: (1) Đã nắm được gì, (2) Còn yếu/chưa rõ gì, (3) 1-2 việc nên làm tiếp. Giọng khích lệ, rõ ràng.',{cache:false,onText:function(e){m.t=e.text;rChat()}});
+    m.t='📋 **Tóm tắt buổi học**\n\n'+r.text;
+  }catch(e){m.t=errMsg(e);m.err=true}
+  save();rChat();
+};
+if($('cgoal')){
+  $('cgoal').value=S.prof.goalChat||'';
+  $('cgoal').onchange=function(){S.prof.goalChat=$('cgoal').value.trim();save()};
+}
+
+
+var hl=0,hq='';
+$('hint').onclick=async function(){var t=$('q').value.trim();if(!t&&!blob){$('q').focus();return}if(t!==hq){hq=t;hl=0}hl=Math.min(3,hl+1);$('out').classList.remove('hide');$('fb').classList.add('hide');var op={};if(blob)op.images=[blob];
+try{
+var hp;
+if(getSubj()==='Ngữ văn'){
+  hp='Đề bài: '+(t||'(trong ảnh)')+'\n\nChỉ đưa GỢI Ý mức '+hl+'/3 cho bài văn/ngữ văn. Mức 1: xác định dạng bài và yêu cầu đề. Mức 2: gợi ý các ý chính / hướng triển khai (chưa viết mẫu). Mức 3: gợi ý mở bài hoặc ý đầu thân bài. TUYỆT ĐỐI chưa viết bài hoàn chỉnh. Kết thúc bằng 1 câu hỏi để học sinh tự nghĩ tiếp.';
+}else{
+  hp='Đề bài: '+(t||'(trong ảnh)')+'\n\nHãy chỉ đưa GỢI Ý mức '+hl+'/3 (1: hướng tiếp cận; 2: công thức hoặc ý chính cần dùng; 3: bước làm đầu tiên). TUYỆT ĐỐI không đưa đáp án hay lời giải đầy đủ. Kết thúc bằng một câu hỏi gợi mở để học sinh tự thử.';
+}
+await ask(hp,$('ans'),op)}catch(e){$('ans').innerHTML='<span class="err">'+errMsg(e)+'</span>'}};
+
+var qz={n:0,ok:0,lv:2,cur:null,on:false,seen:[]};
+async function qnext(){
+if(qz.n>=10){$('qq').textContent='Hoàn thành! Đúng '+qz.ok+'/10. Mức khó cuối: '+qz.lv+'/5.';$('qo').innerHTML='';$('qe').textContent='';$('qn').classList.add('hide');qz.on=false;return}
+$('qn').classList.add('hide');$('qe').textContent='';$('qq').textContent='Đang tạo câu hỏi môn '+(getSubj())+'...';$('qo').innerHTML='';
+try{
+  var t=$('qt').value.trim(),w=weak(),subj=getSubj();
+  var subjHint={
+    'Toán':'Câu hỏi toán có số liệu rõ, 4 đáp án trong đó 1 đúng.',
+    'Vật lý':'Câu hỏi vật lý (khái niệm hoặc tính toán đơn giản), đơn vị SI rõ ràng.',
+    'Hóa học':'Câu hỏi hóa (khái niệm, phản ứng hoặc tính toán mol/nồng độ cơ bản).',
+    'Tiếng Anh':'Câu hỏi tiếng Anh (grammar, vocabulary hoặc reading ngắn). Có thể viết câu hỏi bằng tiếng Anh, giải thích bằng tiếng Việt.',
+    'Ngữ văn':'Câu hỏi ngữ văn (đọc hiểu, kiến thức văn học, tiếng Việt hoặc nhận biết biện pháp tu từ / nội dung tác phẩm). Không hỏi quá mở.'
+  };
+  var prompt='Tạo 1 câu hỏi trắc nghiệm môn '+subj+' cho học sinh '+S.prof.grade+', độ khó '+qz.lv+'/5. '+(t?'Bắt buộc đúng chủ đề: "'+t+'". ':'Chủ đề thuộc chương trình '+S.prof.grade+(gt().length?': '+gt().slice(0,8).join(', '):'')+'. ')+(w.length&&!t?'Ưu tiên chủ đề yếu: '+w[0]+'. ':'')+(subjHint[subj]||'')+' Không trùng các câu đã hỏi: '+(qz.seen.slice(-5).join(' | ')||'(chưa có)')+'. Trả về JSON đúng dạng: {"q":"câu hỏi","options":["A. ...","B. ...","C. ...","D. ..."],"answer":0,"explain":"giải thích ngắn vì sao đúng","topic":"tên chủ đề ngắn"} với answer là chỉ số 0-3.';
+  var j=await askJson(prompt);
+  if(!j||!j.q||!j.options||!j.options.length)throw{code:'parse',message:'Câu hỏi thiếu dữ liệu'};
+  if(typeof j.answer!=='number')j.answer=parseInt(j.answer,10)||0;
+  if(j.answer<0||j.answer>3)j.answer=0;
+  while(j.options.length<4)j.options.push('—');
+  j.options=j.options.slice(0,4);
+  qz.cur=j;qz.seen.push(String(j.q).slice(0,50));
+  $('qq').innerHTML=(qz.n+1)+'/10 · <span class="tip">'+esc(subj)+(t?' · '+esc(t):'')+'</span><br>'+esc(j.q);
+  $('qo').innerHTML=j.options.map(function(o,i){return '<button type="button" class="ghost" style="display:block;width:100%;text-align:left;margin-top:6px" data-o="'+i+'">'+esc(o)+'</button>'}).join('');
+}catch(e){
+  $('qq').innerHTML='<span class="err">'+(e&&e.message?e.message:errMsg(e))+'</span><br><span class="tip">Môn: '+esc(getSubj())+'. Thử bấm "Câu tiếp theo" hoặc đổi chủ đề.</span>';
+  $('qn').classList.remove('hide');
+}
+}
+$('qo').onclick=function(e){var i=e.target.dataset.o;if(i==null||!qz.on||!qz.cur||qz.cur.done)return;var j=qz.cur;j.done=1;var ok=+i===+j.answer;qz.n++;if(ok)qz.ok++;qz.lv=Math.max(1,Math.min(5,qz.lv+(ok?1:-1)));S.lv=qz.lv;$('ql').value=qz.lv+'/5';
+S.log.push({q:j.q,topic:nt(j.topic||($('qt')&&$('qt').value)||'Tổng hợp'),ok:ok,ts:Date.now(),due:ok?null:Date.now()+864e5,step:0,subj:getSubj()});save();
+$('qe').innerHTML=esc((ok?'✓ Chính xác. ':'✗ Chưa đúng. ')+'Đáp án: '+(j.options[j.answer]||'')+'. '+(j.explain||''));$('qn').classList.remove('hide')};
+$('qn').onclick=qnext;
+$('qs').onclick=function(){var lv0=S.lv||2;qz={n:0,ok:0,lv:lv0,cur:null,on:true,seen:[]};$('ql').value=lv0+'/5';$('qb').classList.remove('hide');$('qq').textContent='';$('qo').innerHTML='';$('qe').textContent='';qnext()};
+
+var cblob=null,cfileText='';
+function handleCFile(f,isCam){
+if(!f)return;
+cblob=null;cfileText='';
+var isImg=/^image\//.test(f.type)||/\.(jpe?g|png|gif|webp|bmp|heic)$/i.test(f.name);
+if(isImg){
+cblob=f;prepImg(f).then(function(p){cblob=p.blob});
+$('cw').placeholder='Ảnh bài làm đã chọn: '+f.name+(isCam?' (từ camera)':'');
+}else if(/text\/|\.txt$/i.test(f.type+' '+f.name)){
+var r=new FileReader();
+r.onload=function(){
+cfileText=String(r.result||'');
+$('cw').value=($('cw').value?$('cw').value+'\n\n':'')+cfileText.slice(0,6000);
+$('cw').placeholder='Đã đọc file: '+f.name;
+};
+r.readAsText(f,'utf-8');
+}else{
+$('cw').placeholder='Loại file chưa hỗ trợ: '+f.name;
+}
+}
+$('cf').onchange=function(){var f=this.files[0];handleCFile(f,false);this.value=''};
+$('cfcam').onchange=function(){var f=this.files[0];handleCFile(f,true);this.value=''};
+$('cb').onclick=async function(){
+var q=$('cq').value.trim(),w=$('cw').value.trim();
+if(!q||(!w&&!cblob&&!cfileText)){$('co').textContent='Hãy nhập đề bài và bài làm (hoặc ảnh/file).';return}
+$('cb').disabled=true;
+try{
+var op={};
+if(cblob)op.images=[cblob];
+var checkP;
+if(getSubj()==='Ngữ văn'||getSubj()==='Tiếng Anh'){
+  checkP='Đề bài: '+q+'\nBài làm của học sinh:\n'+(w||cfileText||'(trong ảnh/file đính kèm)')+'\n\nHãy chấm / nhận xét bài viết:\n1) Mức độ đúng đề\n2) Ý tưởng & nội dung\n3) Bố cục\n4) Diễn đạt / ngôn ngữ (và ngữ pháp nếu là Tiếng Anh)\n5) Điểm mạnh\n6) Gợi ý sửa cụ thể (1-3 chỗ)\nCuối cùng ghi: KẾT QUẢ: ĐẠT hoặc KẾT QUẢ: CẦN SỬA.';
+}else{
+  checkP='Đề bài: '+q+'\nBài làm của học sinh: '+(w||cfileText||'(trong ảnh/file đính kèm)')+'\n\nHãy kiểm tra: chỉ ra chính xác bước nào sai (nếu có) và vì sao, rồi hướng dẫn cách sửa, không chép nguyên lời giải. Dòng cuối ghi đúng một trong hai: KẾT QUẢ: ĐÚNG hoặc KẾT QUẢ: SAI.';
+}
+var t=await ask(checkP,$('co'),op);
+var ok=!/KẾT QUẢ:\s*(SAI|CẦN SỬA)/i.test(t);
+var x={q:q,topic:'Chưa phân loại',ok:ok,ts:Date.now(),due:ok?null:Date.now()+864e5,step:0,subj:getSubj()};
+S.log.push(x);save();
+askJson('Phân loại chủ đề bằng tên ngắn tiếng Việt cho đề: '+q+'\nTrả về {"topic":"..."}').then(function(j){if(j&&j.topic){x.topic=nt(j.topic);save()}}).catch(function(){});
+}catch(e){$('co').innerHTML='<span class="err">'+errMsg(e)+'</span>'}
+$('cb').disabled=false
+};
+
+var IV=[1,3,7,14];
+function rRev(){var subj=getSubj();var d=S.log.filter(function(x){return x.due&&x.due<=Date.now()&&(x.subj||'Toán')===subj});$('rl').innerHTML=d.length?d.map(function(x){var i=S.log.indexOf(x);return '<div class="it" style="display:block"><b>'+esc(x.topic)+'</b><br>'+esc(x.q.slice(0,140))+'<div class="row"><button class="ghost" data-r="'+i+'" data-a="redo">Làm lại</button><button class="ghost" data-r="'+i+'" data-a="ok">Nhớ rồi</button><button class="ghost" data-r="'+i+'" data-a="no">Quên rồi</button></div></div>'}).join(''):'<p class="tip">Chưa có bài cần ôn hôm nay. Các bài bạn làm sai sẽ tự xuất hiện ở đây.</p>'}
+$('rl').onclick=function(e){var i=e.target.dataset.r;if(i==null)return;var x=S.log[i],a=e.target.dataset.a;
+if(a==='redo'){$('q').value=x.q;tab('solve');return}
+S.rev=(S.rev||0)+1;if(a==='ok'){x.step=(x.step||0)+1;if(x.step>=IV.length){x.due=null;x.ok=true}else x.due=Date.now()+IV[x.step]*864e5}else{x.step=0;x.due=Date.now()+864e5}save();rRev()};
+
+$('wrb').onclick=async function(){var wk=S.log.filter(function(x){return x.ts>Date.now()-6048e5}),m={};wk.forEach(function(x){if(x.ok==null)return;var o=m[x.topic]||(m[x.topic]={ok:0,n:0});o.n++;if(x.ok)o.ok++});
+var d=Object.keys(m).map(function(t){return t+': '+m[t].ok+'/'+m[t].n}).join('; ')||'chưa có';
+try{await ask('Viết báo cáo tuần ngắn (dưới 150 từ) cho học sinh '+S.prof.grade+': số hoạt động '+wk.length+', kết quả theo chủ đề: '+d+', buổi học hoàn thành '+S.sched.filter(function(x){return x.done}).length+'/'+S.sched.length+'. Nêu điểm tiến bộ, điểm còn yếu và 2 việc nên làm tuần tới. Giọng khích lệ.',$('wr'))}catch(e){$('wr').innerHTML='<span class="err">'+errMsg(e)+'</span>'}};
+
+var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+function mic(el){if(!SR)return;var r=new SR();r.lang='vi-VN';r.onresult=function(e){el.value=(el.value+' '+e.results[0][0].transcript).trim()};try{r.start()}catch(x){}}
+if(!SR){$('mic').classList.add('hide');$('cm').classList.add('hide')}
+$('mic').onclick=function(){mic($('q'))};$('cm').onclick=function(){mic($('ci'))};
+$('spk').onclick=function(){try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance($('ans').textContent);u.lang='vi-VN';speechSynthesis.speak(u)}catch(e){}};
+
+
+var curT='solve',tbm=false,nz='',chk=null,socratic=false;
+var TM=' Bạn vừa gặp vài bài khó liên tiếp. Nghỉ 5 phút hoặc thử bài dễ hơn nhé, sai là một phần của học.';
+
+// === Dữ liệu kiến thức đa môn ===
+var SUBJ_DATA = {
+"Toán": {
+  CUR: {
+    1:['Số và phép tính trong phạm vi 100','Hình phẳng cơ bản','Đo độ dài'],
+    2:['Phép cộng trừ có nhớ','Bảng nhân và bảng chia','Đơn vị đo và thời gian'],
+    3:['Nhân chia số có nhiều chữ số','Hình chữ nhật và hình vuông','Phân số đơn giản'],
+    4:['Phân số','Trung bình cộng và tỉ số','Số tự nhiên lớn'],
+    5:['Số thập phân','Tỉ số phần trăm','Chuyển động đều','Diện tích và thể tích'],
+    6:['Số học và số thực','Phân số và số thập phân','Hình học trực quan'],
+    7:['Biểu thức đại số','Tỉ lệ thức và tỉ số','Tam giác và đường thẳng song song','Thống kê và xác suất'],
+    8:['Hằng đẳng thức','Phân tích đa thức thành nhân tử','Phân thức đại số','Phương trình bậc nhất','Bất phương trình','Hàm số bậc nhất','Tam giác đồng dạng'],
+    9:['Căn bậc hai','Hệ phương trình','Phương trình bậc hai','Hàm số bậc hai và đồ thị','Hệ thức lượng trong tam giác vuông','Đường tròn'],
+    10:['Tập hợp và mệnh đề','Lượng giác','Vectơ và hình học tọa độ','Tổ hợp và xác suất'],
+    11:['Dãy số và cấp số','Giới hạn','Mũ và logarit','Hình học không gian'],
+    12:['Đạo hàm','Khảo sát hàm số','Tích phân','Số phức']
+  },
+  PRE: {
+    'Phương trình bậc hai':['Hằng đẳng thức','Phân tích đa thức thành nhân tử','Căn bậc hai'],
+    'Hệ phương trình':['Phương trình bậc nhất'],'Bất phương trình':['Phương trình bậc nhất'],
+    'Phân thức đại số':['Phân tích đa thức thành nhân tử'],'Hàm số bậc nhất':['Phương trình bậc nhất'],
+    'Hàm số bậc hai và đồ thị':['Phương trình bậc hai','Hàm số bậc nhất'],
+    'Tam giác đồng dạng':['Tỉ lệ thức và tỉ số','Tam giác và đường thẳng song song'],
+    'Hệ thức lượng trong tam giác vuông':['Tam giác đồng dạng','Căn bậc hai'],
+    'Đường tròn':['Tam giác đồng dạng'],'Lượng giác':['Hệ thức lượng trong tam giác vuông'],
+    'Giới hạn':['Dãy số và cấp số'],'Đạo hàm':['Giới hạn','Hàm số bậc hai và đồ thị'],
+    'Tích phân':['Đạo hàm'],'Mũ và logarit':['Căn bậc hai'],
+    'Phép cộng trừ có nhớ':['Số và phép tính trong phạm vi 100'],'Bảng nhân và bảng chia':['Phép cộng trừ có nhớ'],
+    'Nhân chia số có nhiều chữ số':['Bảng nhân và bảng chia'],'Số tự nhiên lớn':['Nhân chia số có nhiều chữ số'],
+    'Phân số':['Số tự nhiên lớn'],'Số thập phân':['Phân số'],'Tỉ số phần trăm':['Số thập phân','Phân số'],
+    'Số học và số thực':['Số thập phân'],'Biểu thức đại số':['Số học và số thực'],
+    'Hằng đẳng thức':['Biểu thức đại số'],'Phương trình bậc nhất':['Biểu thức đại số'],
+    'Căn bậc hai':['Số học và số thực'],'Dãy số và cấp số':['Biểu thức đại số'],
+    'Tổ hợp và xác suất':['Thống kê và xác suất'],'Vectơ và hình học tọa độ':['Hệ thức lượng trong tam giác vuông'],
+    'Hình học không gian':['Diện tích và thể tích','Vectơ và hình học tọa độ'],
+    'Khảo sát hàm số':['Đạo hàm'],'Số phức':['Phương trình bậc hai']
+  }
+},
+"Vật lý": {
+  CUR: {
+    6:['Đo lường và đơn vị','Khái niệm lực','Khối lượng và trọng lượng','Chuyển động cơ học cơ bản','Năng lượng và công suất sơ giản'],
+    7:['Chuyển động thẳng đều','Tốc độ và vận tốc','Lực và biến dạng','Định luật Hooke','Áp suất trong chất lỏng và khí','Lực đẩy Archimedes'],
+    8:['Công và công suất','Cơ năng (động năng, thế năng)','Nhiệt lượng và phương trình cân bằng nhiệt','Sự bay hơi và hiện tượng bề mặt','Quang học: phản xạ và khúc xạ','Thấu kính mỏng'],
+    9:['Điện tích và điện trường sơ giản','Dòng điện không đổi','Định luật Ôm','Công và công suất điện','Từ trường của ống dây','Sóng cơ và âm thanh'],
+    10:['Động học chất điểm','Chuyển động thẳng biến đổi đều','Định luật Newton','Lực ma sát và lực hướng tâm','Công – công suất – năng lượng','Định luật bảo toàn động lượng'],
+    11:['Điện trường và điện thế','Tụ điện','Dòng điện không đổi và định luật Ôm toàn mạch','Từ trường và lực Lorentz','Cảm ứng điện từ','Dòng điện xoay chiều'],
+    12:['Dao động điều hòa','Sóng cơ và giao thoa','Sóng âm','Sóng điện từ và ánh sáng','Lượng tử ánh sáng','Hạt nhân nguyên tử và phóng xạ']
+  },
+  PRE: {
+    'Tốc độ và vận tốc':['Chuyển động cơ học cơ bản'],
+    'Chuyển động thẳng biến đổi đều':['Chuyển động thẳng đều','Tốc độ và vận tốc'],
+    'Định luật Newton':['Lực và biến dạng','Chuyển động thẳng biến đổi đều'],
+    'Động lực học':['Động học chất điểm','Định luật Newton'],
+    'Công – công suất – năng lượng':['Định luật Newton','Công và công suất'],
+    'Cơ năng (động năng, thế năng)':['Công – công suất – năng lượng'],
+    'Định luật Ôm':['Dòng điện không đổi'],
+    'Định luật Ôm toàn mạch':['Định luật Ôm','Điện trường và điện thế'],
+    'Cảm ứng điện từ':['Từ trường và lực Lorentz','Dòng điện không đổi'],
+    'Dòng điện xoay chiều':['Cảm ứng điện từ'],
+    'Dao động điều hòa':['Cơ năng (động năng, thế năng)'],
+    'Sóng cơ và giao thoa':['Dao động điều hòa','Sóng cơ và âm thanh'],
+    'Sóng điện từ và ánh sáng':['Sóng cơ và giao thoa','Quang học: phản xạ và khúc xạ'],
+    'Lượng tử ánh sáng':['Sóng điện từ và ánh sáng']
+  }
+},
+"Hóa học": {
+  CUR: {
+    8:['Nguyên tử – phân tử – ion','Bảng tuần hoàn và định luật tuần hoàn','Phản ứng hóa học và bảo toàn khối lượng','Mol và tính toán hóa học cơ bản','Oxí hóa – khử ở mức sơ giản'],
+    9:['Axit – bazơ – muối','pH và chỉ thị','Kim loại kiềm và kiềm thổ','Nhôm và sắt','Phi kim: clo, lưu huỳnh, nitơ','Phản ứng oxi hóa – khử'],
+    10:['Cấu tạo nguyên tử và cấu hình electron','Bảng tuần hoàn nâng cao','Liên kết ionic, cộng hóa trị, kim loại','Phản ứng oxi hóa – khử và cân bằng','Tốc độ phản ứng và cân bằng hóa học','Dung dịch và nồng độ'],
+    11:['Đại cương hóa hữu cơ','Hidrocacbon no, không no, thơm','Dẫn xuất halogen','Ancol – phenol','Andehit – xeton – axit carboxylic','Ester và lipit','Polime và vật liệu polymer'],
+    12:['Đại cương kim loại','Kim loại kiềm, kiềm thổ, nhôm','Sắt và hợp kim','Tổng hợp hữu cơ và nhận biết chất','Hóa học và vấn đề môi trường','Ôn tập tính toán và bài tập tổng hợp']
+  },
+  PRE: {
+    'Mol và tính toán hóa học cơ bản':['Nguyên tử – phân tử – ion'],
+    'Axit – bazơ – muối':['Phản ứng hóa học và bảo toàn khối lượng'],
+    'Phản ứng oxi hóa – khử':['Oxí hóa – khử ở mức sơ giản','Phản ứng hóa học và bảo toàn khối lượng'],
+    'Cấu hình electron':['Cấu tạo nguyên tử và cấu hình electron'],
+    'Liên kết ionic, cộng hóa trị, kim loại':['Cấu tạo nguyên tử và cấu hình electron'],
+    'Hidrocacbon no, không no, thơm':['Đại cương hóa hữu cơ','Liên kết ionic, cộng hóa trị, kim loại'],
+    'Ancol – phenol':['Hidrocacbon no, không no, thơm'],
+    'Andehit – xeton – axit carboxylic':['Ancol – phenol'],
+    'Ester và lipit':['Andehit – xeton – axit carboxylic'],
+    'Polime và vật liệu polymer':['Ester và lipit','Hidrocacbon no, không no, thơm'],
+    'Sắt và hợp kim':['Đại cương kim loại','Phản ứng oxi hóa – khử'],
+    'Tổng hợp hữu cơ và nhận biết chất':['Andehit – xeton – axit carboxylic','Hidrocacbon no, không no, thơm']
+  }
+},
+"Tiếng Anh": {
+  CUR: {
+    6:['Present Simple','Present Continuous','Vocabulary: School, Family, Daily routines','There is / There are','Reading short texts','Writing simple sentences'],
+    7:['Past Simple','Past Continuous','Comparatives & Superlatives','Countable & Uncountable nouns','Vocabulary: Hobbies, Food, Places','Writing short paragraphs'],
+    8:['Present Perfect','Future (will / going to)','First conditional','Modals (can, should, must)','Vocabulary: Environment, Technology','Listening & speaking basic'],
+    9:['Passive voice','Reported speech','Relative clauses (who/which/that)','Second conditional','Essay & paragraph writing basic','Reading comprehension grade 9'],
+    10:['Mixed conditionals intro','Gerunds & Infinitives','Advanced relative clauses','Formal & informal writing','Vocabulary: Global issues','Reading & gap-filling'],
+    11:['Mixed tenses in context','Academic vocabulary','Discourse markers','Opinion & discussion essays','Reading long texts','Error correction'],
+    12:['Advanced grammar review','IELTS Reading & Writing basics','TOEIC grammar & reading','Essay: advantage/disadvantage, opinion','Speaking: cue cards & discussion','Collocations and paraphrasing']
+  },
+  PRE: {
+    'Present Continuous':['Present Simple'],
+    'Past Simple':['Present Simple'],
+    'Past Continuous':['Past Simple'],
+    'Present Perfect':['Past Simple','Present Simple'],
+    'First conditional':['Present Simple'],
+    'Second conditional':['First conditional','Past Simple'],
+    'Passive voice':['Past Simple','Present Simple'],
+    'Reported speech':['Past Simple','Present Perfect'],
+    'Relative clauses (who/which/that)':['Present Simple'],
+    'Essay & paragraph writing basic':['Writing short paragraphs'],
+    'Formal & informal writing':['Essay & paragraph writing basic'],
+    'Opinion & discussion essays':['Formal & informal writing'],
+    'IELTS Reading & Writing basics':['Advanced grammar review','Opinion & discussion essays'],
+    'Essay: advantage/disadvantage, opinion':['Opinion & discussion essays','Collocations and paraphrasing']
+  }
+},
+"Ngữ văn": {
+  CUR: {
+    6:[
+      'Đọc hiểu văn bản tự sự','Đọc hiểu văn bản miêu tả','Đọc hiểu văn bản biểu cảm',
+      'Kể chuyện','Miêu tả người và cảnh','Viết đoạn văn nêu suy nghĩ',
+      'Từ và nghĩa của từ','Câu đơn và câu ghép','Dấu câu cơ bản',
+      'Truyện dân gian và cổ tích','Thơ lục bát và thơ 4 chữ','Văn bản nhật dụng lớp 6'
+    ],
+    7:[
+      'Đọc hiểu văn bản nghị luận','Đọc hiểu văn bản thuyết minh',
+      'Miêu tả nội tâm','Thuyết minh về sự vật hiện tượng','Viết đoạn văn nghị luận đơn giản',
+      'Các phương thức biểu đạt','Từ loại (danh – động – tính từ)','Câu chủ động và câu bị động',
+      'Truyện trung đại Việt Nam','Thơ trung đại (Nguyễn Trãi, Nguyễn Bỉnh Khiêm)','Văn bản nhật dụng lớp 7',
+      'Phân biệt tự sự – miêu tả – biểu cảm – nghị luận'
+    ],
+    8:[
+      'Đọc hiểu văn bản nghị luận xã hội','Đọc hiểu văn bản văn học (truyện, ký)',
+      'Nghị luận về một sự việc hiện tượng đời sống','Nghị luận về một vấn đề tư tưởng đạo lý',
+      'Thuyết minh về một danh lam / di tích','Viết bài văn tự sự có yếu tố miêu tả, biểu cảm',
+      'Biểu cảm trong thơ và văn xuôi','Từ Hán Việt thông dụng','Câu phức và quan hệ từ',
+      'Truyện ngắn hiện đại (Nam Cao, Thạch Lam…)','Thơ hiện đại (Tố Hữu, Xuân Diệu…)','Ký và tùy bút',
+      'Phân tích nhân vật trong tác phẩm','Phân tích chi tiết nghệ thuật'
+    ],
+    9:[
+      'Nghị luận xã hội (tư tưởng đạo lý & hiện tượng đời sống)','Nghị luận văn học về nhân vật',
+      'Nghị luận văn học về một đoạn thơ / bài thơ','Nghị luận về một tác phẩm hoặc đoạn trích',
+      'Đọc hiểu văn bản nghị luận và văn học phức hợp','Kỹ năng làm bài thi vào 10',
+      'Truyện ngắn và tiểu thuyết (Chiếc lược ngà, Lặng lẽ Sa Pa…)','Thơ Việt Nam hiện đại (Đoàn thuyền đánh cá, Bếp lửa…)',
+      'Văn học nước ngoài cơ bản (Âu Cơ, Rô-bin-xơn…)','Tiếng Việt: nghĩa tường minh và hàm ý',
+      'Phương thức lập luận (giải thích, chứng minh, bình luận)','Liên kết câu và liên kết đoạn văn'
+    ],
+    10:[
+      'Khái quát văn học dân gian Việt Nam','Sử thi và truyền thuyết','Truyện thơ Nôm và thơ Đường luật',
+      'Văn học trung đại Việt Nam (thế kỷ X–XIX)','Nguyễn Trãi – Bình Ngô đại cáo / thơ Quốc âm',
+      'Nguyễn Du – Truyện Kiều (đoạn trích tiêu biểu)','Hồ Xuân Hương và thơ Nôm Đường luật',
+      'Nguyễn Đình Chiểu – Văn tế nghĩa sĩ Cần Giuộc','Cảm nhận hình tượng nhân vật / hình ảnh thơ',
+      'Nghị luận xã hội nâng cao','Nghị luận văn học về đoạn thơ, nhân vật trung đại',
+      'Tiếng Việt: hoạt động giao tiếp, phong cách ngôn ngữ nghệ thuật'
+    ],
+    11:[
+      'Khái quát văn học Việt Nam từ đầu thế kỷ XX','Thơ mới 1932–1945 (Xuân Diệu, Huy Cận, Hàn Mặc Tử…)',
+      'Văn xuôi lãng mạn và hiện thực (Thạch Lam, Nam Cao, Vũ Trọng Phụng…)',
+      'Văn học cách mạng (Tố Hữu, Chính Hữu, Quang Dũng…)',
+      'Tác phẩm: Đây thôn Vĩ Dạ, Vội vàng, Tràng giang, Tây Tiến, Việt Bắc…',
+      'Tác phẩm: Chí Phèo, Hai đứa trẻ, Chữ người tử tù…',
+      'Nghị luận về một tư tưởng đạo lý','Nghị luận về một hiện tượng đời sống',
+      'Nghị luận về một bài thơ / đoạn thơ','Nghị luận về một nhân vật văn học',
+      'Phân tích – cảm nhận – so sánh tác phẩm','Phong cách ngôn ngữ báo chí và chính luận'
+    ],
+    12:[
+      'Văn học Việt Nam từ 1945 đến hết thế kỷ XX','Văn học đổi mới sau 1975',
+      'Tác phẩm: Sóng (Xuân Quỳnh), Đất nước (Nguyễn Khoa Điềm), Rừng xà nu, Những đứa con trong gia đình…',
+      'Tác phẩm: Chiếc thuyền ngoài xa, Người lái đò Sông Đà, Ai đã đặt tên cho dòng sông…',
+      'Văn học nước ngoài (Hăm-lét, Ông già và biển cả…)','Nghị luận xã hội đề mở / gần gũi đời sống',
+      'Nghị luận văn học tổng hợp (nhân vật, đoạn thơ, tác phẩm)','So sánh liên tác phẩm, liên thời kỳ',
+      'Kỹ năng làm bài thi THPT Quốc gia Ngữ văn','Đọc hiểu ngữ liệu lạ và nghị luận nhanh',
+      'Phương pháp lập dàn ý và viết mở – kết bài','Ôn tập kiến thức tiếng Việt phục vụ làm văn'
+    ]
+  },
+  PRE: {
+    'Miêu tả người và cảnh':['Đọc hiểu văn bản miêu tả'],
+    'Viết đoạn văn nêu suy nghĩ':['Đọc hiểu văn bản biểu cảm','Viết đoạn văn nêu suy nghĩ'],
+    'Viết đoạn văn nghị luận đơn giản':['Đọc hiểu văn bản nghị luận','Viết đoạn văn nêu suy nghĩ'],
+    'Nghị luận về một sự việc hiện tượng đời sống':['Viết đoạn văn nghị luận đơn giản','Văn bản nghị luận'],
+    'Nghị luận về một vấn đề tư tưởng đạo lý':['Nghị luận về một sự việc hiện tượng đời sống'],
+    'Nghị luận xã hội (tư tưởng đạo lý & hiện tượng đời sống)':['Nghị luận về một vấn đề tư tưởng đạo lý','Nghị luận về một sự việc hiện tượng đời sống'],
+    'Nghị luận văn học về nhân vật':['Phân tích nhân vật trong tác phẩm','Nghị luận xã hội (tư tưởng đạo lý & hiện tượng đời sống)'],
+    'Nghị luận văn học về một đoạn thơ / bài thơ':['Biểu cảm trong thơ và văn xuôi','Phân tích chi tiết nghệ thuật'],
+    'Nghị luận về một tác phẩm hoặc đoạn trích':['Nghị luận văn học về nhân vật','Nghị luận văn học về một đoạn thơ / bài thơ'],
+    'Nguyễn Du – Truyện Kiều (đoạn trích tiêu biểu)':['Văn học trung đại Việt Nam (thế kỷ X–XIX)','Truyện thơ Nôm và thơ Đường luật'],
+    'Cảm nhận hình tượng nhân vật / hình ảnh thơ':['Phân tích nhân vật trong tác phẩm','Phân tích chi tiết nghệ thuật'],
+    'Nghị luận văn học về đoạn thơ, nhân vật trung đại':['Nguyễn Du – Truyện Kiều (đoạn trích tiêu biểu)','Cảm nhận hình tượng nhân vật / hình ảnh thơ'],
+    'Nghị luận về một bài thơ / đoạn thơ':['Thơ mới 1932–1945 (Xuân Diệu, Huy Cận, Hàn Mặc Tử…)','Nghị luận văn học về một đoạn thơ / bài thơ'],
+    'Nghị luận về một nhân vật văn học':['Tác phẩm: Chí Phèo, Hai đứa trẻ, Chữ người tử tù…','Nghị luận văn học về nhân vật'],
+    'Phân tích – cảm nhận – so sánh tác phẩm':['Nghị luận về một bài thơ / đoạn thơ','Nghị luận về một nhân vật văn học'],
+    'Nghị luận văn học tổng hợp (nhân vật, đoạn thơ, tác phẩm)':['Phân tích – cảm nhận – so sánh tác phẩm','Nghị luận về một nhân vật văn học'],
+    'Kỹ năng làm bài thi THPT Quốc gia Ngữ văn':['Nghị luận văn học tổng hợp (nhân vật, đoạn thơ, tác phẩm)','Nghị luận xã hội đề mở / gần gũi đời sống','Đọc hiểu ngữ liệu lạ và nghị luận nhanh'],
+    'Phương pháp lập dàn ý và viết mở – kết bài':['Nghị luận xã hội nâng cao','Viết đoạn văn nghị luận đơn giản'],
+    'So sánh liên tác phẩm, liên thời kỳ':['Phân tích – cảm nhận – so sánh tác phẩm','Văn học Việt Nam từ 1945 đến hết thế kỷ XX']
+  }
+}
+};
+
+function getSubj(){return S.prof.subj||'Toán'}
+function getCUR(){var d=SUBJ_DATA[getSubj()];return d?d.CUR:{}}
+function getPRE(){var d=SUBJ_DATA[getSubj()];return d?d.PRE:{}}
+function getTOPICS(){
+  var cur=getCUR(),t=[];
+  Object.keys(cur).forEach(function(g){t=t.concat(cur[g])});
+  return t.concat('Khác');
+}
+function gnum(){return parseInt(String(S.prof.grade).replace(/\D/g,''))||9}
+function gt(){return getCUR()[gnum()]||[]}
+function tg(t){var cur=getCUR();for(var g in cur)if(cur[g].indexOf(t)>=0)return g}
+function TL(){var cur=getCUR();return Object.keys(cur).map(function(g){return 'Lớp '+g+': '+cur[g].join(', ')}).join(' | ')+' | Khác'}
+function hasMap(){return !!SUBJ_DATA[getSubj()]}
+function isM(){return getSubj()==='Toán'} // giữ tương thích
+function nt(t){
+  if(!t)return t;
+  var TOPICS=getTOPICS();
+  if(TOPICS.indexOf(t)>=0)return t;
+  var l=String(t).toLowerCase(),r=TOPICS.filter(function(k){return k.toLowerCase().indexOf(l)>=0||l.indexOf(k.toLowerCase())>=0})[0];
+  return r||t;
+}
+
+
+['pg','mg'].forEach(function(id){var s=$(id);if(s && s.options.length<5){for(var g=1;g<=12;g++){var o=document.createElement('option');o.textContent='Lớp '+g;s.appendChild(o)}}});
+if($('pg'))$('pg').value=S.prof.grade;if($('mg'))$('mg').value=S.prof.grade;
+if($('mg'))$('mg').onchange=function(){S.prof.grade=$('mg').value;if($('pg'))$('pg').value=S.prof.grade;save();rMap()};
+if($('pg'))$('pg').onchange=function(){S.prof.grade=$('pg').value;if($('mg'))$('mg').value=S.prof.grade;save()};
+function rMap(){
+  if(!$('mg')||!$('mp'))return;
+  $('mg').value=S.prof.grade;var box=$('mp');
+  var subj=getSubj();
+  if(!hasMap()){$('ms').textContent='';box.innerHTML='<div class="card"><p class="tip">Bản đồ chưa có cho môn này. Đang hỗ trợ: Toán, Vật lý, Hóa học, Tiếng Anh, Ngữ văn.</p></div>';return}
+  var CUR=getCUR(),m=stats(),G=gnum(),h='',tot=0,good=0;
+  h+='<div class="card" style="padding:10px 14px;margin-bottom:10px"><b>Môn: '+esc(subj)+'</b> · Lớp '+G+'<br><span class="tip">Bấm chủ đề → chọn cách ôn (quiz / giải thích / bài tập)</span></div>';
+  var LV={1:'Tiểu học (lớp 1-5)',6:'Trung học cơ sở (lớp 6-9)',10:'Trung học phổ thông (lớp 10-12)'};
+  var grades=Object.keys(CUR).map(Number).sort(function(a,b){return a-b});
+  grades.forEach(function(g){
+    g=String(g);
+    var L=CUR[g],ok=0;
+    if(LV[g])h+='<h4>'+LV[g]+'</h4>';
+    var ch=L.map(function(t){
+      var r=m[t]?m[t].ok/m[t].n:null,col=r==null?'#8a90b3':r>=.8?'#2fb344':r>=.6?'#f5a524':'#e5484d';
+      if(r!=null&&r>=.8)ok++;
+      return '<button type="button" class="chip" data-topic="'+esc(t)+'" style="border-color:'+col+';color:'+col+'">'+esc(t)+(r==null?'':' '+Math.round(r*100)+'%')+'</button>';
+    }).join('');
+    if(+g<=G){tot+=L.length;good+=ok}
+    h+='<details class="card"'+(+g===G||+g===G-1||+g===G+1?' open':'')+'><summary><b>Lớp '+g+'</b>'+(+g===G?' · lớp của bạn':'')+' <span class="tip">'+ok+'/'+L.length+' chủ đề vững</span></summary><div class="chips">'+ch+'</div></details>';
+  });
+  $('ms').textContent='Môn '+subj+': vững '+good+'/'+tot+' chủ đề (đến lớp '+G+'). Đổi môn ở thanh trên để xem bản đồ môn khác.';
+  box.innerHTML=h;
+}
+if($('mp'))$('mp').onclick=function(e){
+  var b=e.target.closest('[data-topic]');
+  if(!b)return;
+  var topic=b.getAttribute('data-topic');
+  if(!topic)return;
+  // Menu ôn tập theo đúng môn hiện tại
+  var subj=getSubj();
+  var choice=window.prompt('Ôn "'+topic+'" (môn '+subj+'):\n1 = Quiz 10 câu\n2 = Giải thích kiến thức\n3 = Cho bài tập\n\nNhập 1, 2 hoặc 3:','1');
+  if(choice==='2'){
+    tab('more');showSub('more','chat');rChat();
+    if($('cgoal')){$('cgoal').value='Ôn: '+topic;S.prof.goalChat='Ôn: '+topic;save()}
+    $('ci').value='Hãy giải thích rõ chủ đề "'+topic+'" cho học sinh '+S.prof.grade+', môn '+subj+'. Có ví dụ và lưu ý dễ nhầm.';
+    $('cs').click();
+  }else if(choice==='3'){
+    tab('solve');
+    $('q').value='Cho 3 bài tập về chủ đề "'+topic+'" (môn '+subj+', '+S.prof.grade+'), từ dễ đến khó. Có đáp án cuối.';
+    $('go').click();
+  }else{
+    $('qt').value=topic;
+    tab('quiz');
+    setTimeout(function(){if($('qs'))$('qs').click()},100);
+  }
+};
+
+function tough(){var k=S.log.filter(function(x){return x.ok!=null}).slice(-3);return k.length===3&&k.every(function(x){return x.ok===false})}
+function wkd(){function a(f,t){var k=S.log.filter(function(x){return x.ok!=null&&x.ts>=f&&x.ts<t});return k.length?Math.round(100*k.filter(function(x){return x.ok}).length/k.length):null}var n=Date.now(),w=6048e5,A=a(n-w,n+1),B=a(n-2*w,n-w);return (A==null?'-':A+'%')+' / '+(B==null?'-':B+'%')}
+$('yes').onclick=async function(){if(!cur)return;$('fb').classList.add('hide');$('cf2').classList.remove('hide');$('cq2').textContent='Đang tạo bài tương tự...';$('ca2').value='';
+try{var j=await askJson('Tạo 1 bài tương tự (cùng dạng, đổi số liệu) môn '+(S.prof.subj||'Toán')+' với đề: '+lastQ+'. Trả về {"q":"đề bài","answer":"đáp án cuối ngắn gọn"}');chk={q:j.q,a:j.answer};$('cq2').innerHTML='Bài tương tự (làm không xem lời giải nhé):<br>'+esc(j.q)}catch(e){$('cq2').textContent=errMsg(e)}};
+$('cc2').onclick=async function(){if(!chk||!cur)return;var v=$('ca2').value.trim();if(!v)return;$('cc2').disabled=true;
+try{var j=await askJson('Đề: '+chk.q+'\nĐáp án chuẩn: '+chk.a+'\nĐáp án học sinh: '+v+'\nHãy chấm. Nếu sai, phân loại lỗi vào đúng một loại: Khái niệm, Tính toán, Đọc đề, Ẩu. Trả về {"correct":true hoặc false,"err":"loại lỗi hoặc rỗng","note":"một câu nhận xét"}');
+cur.ok=!!j.correct;cur.err=j.correct?'':(j.err||'');if(!cur.ok){cur.due=Date.now()+864e5;cur.step=0}save();$('cf2').classList.add('hide');$('fbn').textContent=(j.correct?'✅ Chính xác, bạn đã hiểu bài này. ':'❌ Chưa đúng'+(j.err?' (lỗi: '+j.err+')':'')+'. ')+(j.note||'')+(tough()?TM:'');$('fbn').classList.remove('hide')}catch(e){$('fbn').textContent=errMsg(e);$('fbn').classList.remove('hide')}$('cc2').disabled=false};
+function plot(){var ex=$('gf').value.trim().toLowerCase().replace(/\s+/g,''),m=$('gm');m.textContent='';var c0=$('gc');c0.getContext('2d').clearRect(0,0,c0.width,c0.height);
+if(!ex||!/^[0-9x+\-*\/^().,]*$/.test(ex.replace(/sin|cos|tan|sqrt|abs|exp|ln|log|pi/g,''))){m.textContent='Hàm chưa hợp lệ. Dùng x, + - * / ^, sin cos tan sqrt abs exp ln log pi.';return}
+var e=ex.replace(/(\d|\))(?=x|\(|sin|cos|tan|sqrt|abs|exp|ln|log|pi)/g,'$1*').replace(/x(?=\d|x|\(|sin|cos|tan|sqrt|abs|exp|ln|log|pi)/g,'x*').replace(/(^|[(*+,])-/g,'$1-1*').replace(/\^/g,'**').replace(/\bpi\b/g,'Math.PI').replace(/\b(sin|cos|tan|sqrt|abs|exp)\(/g,'Math.$1(').replace(/\bln\(/g,'Math.log(').replace(/(^|[^.\w])log\(/g,'$1Math.log10(');
+var f;try{f=new Function('x','return '+e)}catch(er){m.textContent='Không đọc được biểu thức.';return}
+var c=$('gc'),g=c.getContext('2d'),W=c.width,H=c.height,xs=[],ys=[],lo=1e9,hi=-1e9,i;
+for(i=0;i<=600;i++){var x=-10+20*i/600,y;try{y=f(x)}catch(er){y=NaN}xs.push(x);ys.push(y);if(isFinite(y)&&Math.abs(y)<1e3){lo=Math.min(lo,y);hi=Math.max(hi,y)}}
+if(lo>hi){m.textContent='Không có giá trị để vẽ.';return}if(hi-lo<1e-6){lo-=1;hi+=1}var p=(hi-lo)*.1;lo-=p;hi+=p;
+var tx=getComputedStyle(document.body).color,sx=function(v){return (v+10)/20*W},sy=function(v){return H-(v-lo)/(hi-lo)*H};
+g.clearRect(0,0,W,H);g.strokeStyle=tx;g.globalAlpha=.35;g.lineWidth=1;g.beginPath();if(lo<0&&hi>0){g.moveTo(0,sy(0));g.lineTo(W,sy(0))}g.moveTo(sx(0),0);g.lineTo(sx(0),H);g.stroke();
+g.globalAlpha=1;g.fillStyle=tx;g.font='13px sans-serif';g.fillText('x: -10 → 10',8,H-8);g.fillText('y: '+lo.toFixed(1)+' → '+hi.toFixed(1),8,16);
+g.strokeStyle='#4f46e5';g.lineWidth=2.5;g.beginPath();var on=false;for(i=0;i<xs.length;i++){var y2=ys[i];if(!isFinite(y2)||Math.abs(y2)>=1e3){on=false;continue}if(on)g.lineTo(sx(xs[i]),sy(y2));else{g.moveTo(sx(xs[i]),sy(y2));on=true}}g.stroke()}
+$('gb').onclick=plot;
+$('exp').onclick=function(){if(!lastA)return;ask('Đề bài: '+lastQ+'\n\nLời giải trước:\n'+lastA+'\n\nHãy giải thích lại thật đơn giản như cho học sinh nhỏ tuổi hơn, dùng ví dụ đời thường.',$('ans')).catch(function(e){$('ans').innerHTML='<span class="err">'+errMsg(e)+'</span>'})};
+$('sim').onclick=function(){if(!lastQ)return;ask('Đề bài gốc: '+lastQ+'\n\nĐưa ra 2 bài tập tương tự (đổi số), kèm đáp án cuối cùng để học sinh tự kiểm tra.',$('ans')).catch(function(e){$('ans').innerHTML='<span class="err">'+errMsg(e)+'</span>'})};
+async function verify(q,a){var v=$('vf');v.textContent='Đang kiểm tra chéo lời giải...';try{var j=await askJson('Hãy tự giải độc lập đề bài sau bằng một cách khác (hoặc thay ngược đáp án vào đề), rồi so với đáp án cuối của lời giải dưới đây. Đề: '+q+'\nLời giải cần kiểm tra (đoạn cuối): '+a.slice(-500)+'\nTrả về {"agree":true hoặc false,"note":"một câu ngắn"}');v.textContent=j.agree?'✅ Đã kiểm tra chéo: kết quả khớp. '+(j.note||''):'⚠️ Hai cách giải cho kết quả khác nhau. '+(j.note||'')+' Hãy hỏi thầy cô hoặc thử nút Gợi ý.'}catch(e){v.textContent=''}}
+
+var ex={qs:[],t:0,tm:null,on:false};
+function exTick(){var s=Math.max(0,Math.round((ex.t-Date.now())/1e3));$('et').textContent='Còn lại: '+Math.floor(s/60)+':'+('0'+s%60).slice(-2);if(s<=0)exEnd()}
+$('es').onclick=async function(){
+var n=Math.min(20,+$('en').value||10),m=+$('em').value||15,w=weak(),subj=getSubj();
+$('es').disabled=true;$('et').textContent='Đang tạo đề môn '+subj+'...';$('er').textContent='';
+try{
+  var prompt='Tạo đề thi thử '+n+' câu trắc nghiệm môn '+subj+' cho học sinh '+S.prof.grade+', độ khó tăng dần, bám SGK Việt Nam. '+(gt().length?'Chủ đề gợi ý: '+gt().slice(0,10).join(', ')+'. ':'')+(w.length?'Chú trọng: '+w.slice(0,3).join(', ')+'. ':'')+'Mỗi câu 4 phương án. Trả về JSON mảng: [{"q":"...","options":["A. ...","B. ...","C. ...","D. ..."],"answer":0,"explain":"ngắn","topic":"chủ đề"}] (answer là số 0-3).';
+  var j=await askJson(prompt);
+  ex.qs=(Array.isArray(j)?j:(j.questions||[])).filter(function(x){return x&&x.q&&x.options});
+  if(!ex.qs.length)throw{code:'parse',message:'Không tạo được câu hỏi'};
+  ex.qs=ex.qs.slice(0,n).map(function(x){
+    if(typeof x.answer!=='number')x.answer=parseInt(x.answer,10)||0;
+    if(!x.options)x.options=[];
+    while(x.options.length<4)x.options.push('—');
+    x.options=x.options.slice(0,4);
+    return x;
+  });
+   $('et').textContent='Đang kiểm tra lại đáp án...';
+   try{
+     var vp='Giải độc lập từng câu trắc nghiệm sau và chọn đáp án đúng nhất. Trả về JSON mảng [{"i":số thứ tự bắt đầu từ 0,"answer":số 0-3}]. Câu hỏi: '+JSON.stringify(ex.qs.map(function(x,i){return{i:i,q:x.q,options:x.options}}));
+     var vj=await askJson(vp),va={};
+     (Array.isArray(vj)?vj:(vj.answers||[])).forEach(function(r){if(r&&r.i!=null)va[r.i]=parseInt(r.answer,10)});
+     var kept=ex.qs.filter(function(x,i){return va[i]===x.answer});
+     if(kept.length>=3){ex.dropped=ex.qs.length-kept.length;ex.qs=kept}else ex.dropped=-1;
+   }catch(e){ex.dropped=-1}
+  ex.on=true;ex.t=Date.now()+m*6e4;
+  $('eq').innerHTML=ex.qs.map(function(x,i){return '<div class="it" style="display:block"><b>Câu '+(i+1)+'.</b> '+esc(x.q)+x.options.map(function(o,k){return '<label style="display:block;margin-top:4px"><input type="radio" name="x'+i+'" value="'+k+'" style="width:auto"> '+esc(o)+'</label>'}).join('')+'</div>'}).join('');
+   $('er').textContent=ex.dropped>0?'Đã loại '+ex.dropped+' câu có đáp án chưa thống nhất để đảm bảo chính xác.':ex.dropped<0?'Lưu ý: chưa kiểm tra lại được đáp án, hãy đối chiếu khi chấm.':'Đáp án đã được kiểm tra lại.';
+  $('eb').classList.remove('hide');clearInterval(ex.tm);ex.tm=setInterval(exTick,1000);exTick();
+}catch(e){$('et').textContent=e&&e.message?e.message:errMsg(e)}
+$('es').disabled=false;
+};
+function exEnd(){if(!ex.on)return;ex.on=false;clearInterval(ex.tm);var ok=0,h='';
+ex.qs.forEach(function(x,i){var r=document.querySelector('input[name=x'+i+']:checked'),g=!!r&&+r.value===+x.answer;if(g)ok++;if(!r){h+='<p>Câu '+(i+1)+': bỏ trống, đáp án đúng <b>'+esc(x.options[x.answer])+'</b>. '+esc(x.explain||'')+'</p>';return}S.log.push({q:x.q,topic:nt(x.topic||'Thi thử'),ok:g,ts:Date.now(),due:g?null:Date.now()+864e5,step:0,subj:getSubj()});if(!g)h+='<p>Câu '+(i+1)+': đáp án đúng <b>'+esc(x.options[x.answer])+'</b>. '+esc(x.explain||'')+'</p>'});
+save();$('et').textContent='Đã nộp bài.';$('er').innerHTML='<h3>Điểm: '+(Math.round(100*ok/ex.qs.length)/10)+'/10 ('+ok+'/'+ex.qs.length+' câu đúng)</h3>'+(h?'<p class="tip">Các câu sai đã được thêm vào mục Ôn tập.</p>'+h:'🎉 Chính xác tuyệt đối!')}
+$('ef').onclick=exEnd;
+
+function rNb(){var subj=getSubj();var w=S.log.filter(function(x){return (x.ok===false||x.due)&&(x.subj||'Toán')===subj}).slice(-8).reverse();$('nb').innerHTML=w.length?w.map(function(x){return '<div class="it" style="display:block"><b>'+esc(x.topic)+'</b><br>'+esc(x.q.slice(0,120))+'</div>'}).join(''):'<p class="tip">Chưa có lỗi sai nào được ghi lại.</p>';rFc()}
+function rFc(){$('fc').innerHTML=(S.cards||[]).map(function(c,i){return '<div class="stat" style="margin-top:8px;cursor:pointer;text-align:left" data-c="'+i+'"><b style="font-size:15px;pointer-events:none">'+esc(c.front)+'</b><span style="pointer-events:none;display:none">'+esc(c.back)+'</span></div>'}).join('')}
+$('fc').onclick=function(e){var d=e.target.closest('[data-c]');if(!d)return;var s=d.querySelector('span');s.style.display=s.style.display==='none'?'block':'none'};
+$('fcb').onclick=async function(){var t=weak().concat(Object.keys(stats())).filter(function(v,i,a){return a.indexOf(v)===i}).slice(0,3).join(', ');if(!t){$('fc').textContent='Hãy làm vài bài trước để có chủ đề.';return}$('fcb').disabled=true;
+try{var j=await askJson('Tạo 6 flashcard công thức hoặc kiến thức quan trọng môn '+(S.prof.subj||'Toán')+' cho '+S.prof.grade+' về các chủ đề: '+t+'. Trả về [{"front":"câu hỏi ngắn","back":"đáp án hoặc công thức"}]');S.cards=(Array.isArray(j)?j:j.cards||[]).slice(0,8);save();rFc()}catch(e){$('fc').innerHTML='<span class="err">'+errMsg(e)+'</span>'}$('fcb').disabled=false};
+
+var pm={s:1500,mode:'work',run:null};
+function pshow(){$('pt').textContent=('0'+Math.floor(pm.s/60)).slice(-2)+':'+('0'+pm.s%60).slice(-2)}
+$('pb').onclick=function(){if(pm.run){clearInterval(pm.run);pm.run=null;$('pb').textContent='Tiếp tục';return}$('pb').textContent='Tạm dừng';pm.run=setInterval(function(){pm.s--;pshow();if(pm.s<=0){clearInterval(pm.run);pm.run=null;if(pm.mode==='work'){S.pomo=(S.pomo||0)+1;save();pm.mode='rest';pm.s=300;$('pc').textContent='Hết 25 phút học! Nghỉ 5 phút nhé. Tổng: '+S.pomo+' phiên.'}else{pm.mode='work';pm.s=1500;$('pc').textContent='Hết giờ nghỉ, sẵn sàng phiên tiếp theo.'}$('pb').textContent='Bắt đầu';pshow()}},1000)};
+$('pr2').onclick=function(){clearInterval(pm.run);pm.run=null;pm.mode='work';pm.s=1500;$('pb').textContent='Bắt đầu';pshow()};
+$('kid').checked=!!S.prof.kid;$('kid').onchange=function(){S.prof.kid=$('kid').checked;save()};
+$('tb').onclick=function(){tbm=!tbm;$('tb').style.background=tbm?'var(--brand)':'';$('tb').style.color=tbm?'#fff':'';if(tbm){S.chat.push({r:'a',t:'Chế độ Dạy lại AI đã bật. Hãy chọn một khái niệm và giải thích như thể bạn đang dạy mình. Mình sẽ đánh giá bạn hiểu đến đâu.'});rChat()}};
+$('soc').onclick=function(){socratic=!socratic;S.prof.socratic=socratic;save();$('soc').style.background=socratic?'var(--brand)':'';$('soc').style.color=socratic?'#fff':'';S.chat.push({r:'a',t:socratic?'Chế độ Hỏi ngược (Socratic) đã BẬT. Mình sẽ ưu tiên đặt câu hỏi gợi mở, ít đưa đáp án ngay.':'Đã tắt chế độ Hỏi ngược.'});rChat()};
+if(S.prof.socratic){socratic=true;$('soc').style.background='var(--brand)';$('soc').style.color='#fff'}
+
+
+
+
+$('subj').value=S.prof.subj||'Toán';$('subj').onchange=function(){S.prof.subj=$('subj').value;save();fillChips();var pane=$('p-learn');if(pane&&pane.classList.contains('show')){rMap();if($('sub-gap')&&!$('sub-gap').classList.contains('hide'))rGap()}if(curT==='gap')rGap();if(curT==='prog'||curT==='more')rProg();if(curT==='rev'){rRev();rNb()}};
+
+$('prb').onclick=async function(){
+  var wk=S.log.filter(function(x){return x.ts>Date.now()-6048e5});
+  var k=wk.filter(function(x){return x.ok!=null}),ok=k.filter(function(x){return x.ok}).length;
+  var m={};wk.forEach(function(x){if(x.ok==null)return;var o=m[x.topic]||(m[x.topic]={ok:0,n:0});o.n++;if(x.ok)o.ok++});
+  var weakT=Object.keys(m).filter(function(t){return m[t].ok/m[t].n<0.6}).join(', ')||'chưa rõ';
+  var strongT=Object.keys(m).filter(function(t){return m[t].ok/m[t].n>=0.8}).join(', ')||'chưa rõ';
+  $('prmsg').textContent='Đang tạo báo cáo...';
+  try{
+    var txt=await ask('Viết báo cáo ngắn gọn (dưới 180 từ) dành cho phụ huynh về tiến độ học của học sinh '+S.prof.grade+' môn '+(S.prof.subj||'Toán')+'. Số bài tuần này: '+wk.length+', tỉ lệ hiểu: '+(k.length?Math.round(100*ok/k.length)+'%':'-')+'. Chủ đề vững: '+strongT+'. Chủ đề cần củng cố: '+weakT+'. Buổi học hoàn thành: '+S.sched.filter(function(x){return x.done}).length+'/'+S.sched.length+'. Giọng trung lập, khách quan, nêu 2-3 gợi ý cụ thể cho phụ huynh hỗ trợ con. Không dùng emoji quá nhiều.',$('wr'));
+    $('prmsg').textContent='Đã tạo báo cáo phụ huynh. Bạn có thể copy nội dung phía trên để gửi.';
+  }catch(e){$('prmsg').textContent=errMsg(e)}
+};
+
+
+
+window.__hf=handleFile;window.__hc=handleCFile;window.__hch=handleChatFile;getS();var tries=0,iv=setInterval(function(){if(smp||++tries>10){clearInterval(iv);return}getS()},800);tab('solve');
+})();
+</script>
+
+<div id="cammod" style="display:none;position:fixed;inset:0;z-index:999;background:#000;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:12px">
+  <video id="camv" autoplay playsinline muted style="max-width:100%;max-height:70vh;border-radius:12px;background:#111"></video>
+  <div style="display:flex;gap:10px"><button class="primary" id="camshot" style="min-width:140px">📸 Chụp</button><button class="ghost" id="camx">Đóng</button></div>
+</div>
+<div id="toast" style="display:none;position:fixed;left:12px;right:12px;bottom:84px;z-index:998;max-width:456px;margin:0 auto;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:10px 12px;box-shadow:var(--shadow);font-size:13px"></div>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)},tt=null,stream=null,cb=null,bypass=false;
+function toast(m){var t=$('toast');t.textContent=m;t.style.display='block';clearTimeout(tt);tt=setTimeout(function(){t.style.display='none'},6000)}
+function stop(){if(stream){stream.getTracks().forEach(function(x){x.stop()});stream=null}$('cammod').style.display='none'}
+async function openCam(done,input){
+  cb=done;
+  var fallback=function(msg){if(msg)toast(msg);if(input){bypass=true;try{input.click()}catch(e){}bypass=false}};
+  if(!window.isSecureContext||!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){fallback('Trình duyệt không cho mở camera trực tiếp, chuyển sang chọn ảnh.');return}
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
+    var v=$('camv');v.srcObject=stream;$('cammod').style.display='flex';try{await v.play()}catch(e){}
+  }catch(e){stop();var n=e&&e.name;fallback(n==='NotAllowedError'?'Camera đang bị chặn. Bấm biểu tượng ổ khóa cạnh địa chỉ để cho phép, hoặc chọn ảnh từ máy.':n==='NotFoundError'?'Không tìm thấy camera, hãy chọn ảnh từ máy.':'Không mở được camera, hãy chọn ảnh từ máy.')}
+}
+$('camx').onclick=stop;
+$('camshot').onclick=function(){
+  var v=$('camv');if(!v.videoWidth){toast('Camera chưa sẵn sàng, thử lại sau 1 giây.');return}
+  var c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);
+  c.toBlob(function(b){stop();if(!b){toast('Không chụp được ảnh.');return}var f=new File([b],'camera-'+Date.now()+'.jpg',{type:'image/jpeg'});if(cb)cb(f,true)},'image/jpeg',0.9);
+};
+function wire(id,fn){var el=$(id);if(!el)return;el.addEventListener('click',function(e){if(bypass)return;e.preventDefault();e.stopPropagation();openCam(fn,el.querySelector('input'))},true)}
+wire('flcam',function(f,c){window.__hf(f,c)});wire('cflcam',function(f,c){window.__hc(f,c)});wire('chcam',function(f,c){window.__hch(f,c)});
+document.addEventListener('paste',function(e){var it=(e.clipboardData&&e.clipboardData.items)||[];for(var i=0;i<it.length;i++){if(it[i].type.indexOf('image/')===0){var f=it[i].getAsFile();if(!f)continue;var t=document.querySelector('.pane.show');var id=t&&t.id;if(id==='p-more'&&window.__hch)window.__hch(f,false);else if(id==='p-practice'&&window.__hc)window.__hc(f,false);else window.__hf(f,false);e.preventDefault();return}}});
+window.addEventListener('error',function(e){toast('Lỗi: '+(e&&e.message||''))});
+})();
+</script>
+</body>
+</html>
